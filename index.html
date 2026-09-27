@@ -1,0 +1,1256 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zauber-Quiz</title>
+<meta name="description" content="Das Familien-Quiz mit Zauberer-Avatar, Vorlesefunktion und Familien-Duell.">
+<meta name="theme-color" content="#1d1245">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Zauber-Quiz">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --sky1: #1d1245;
+  --sky2: #3a1f7a;
+  --card: #ffffff;
+  --card-sunk: #f4f0fb;
+  --ink: #241a3d;
+  --muted: #6a6180;
+  --line: #e2dcef;
+  --magic: #6c3fc5;
+  --magic-soft: #ece4fb;
+  --gold: #f5c542;
+  --gold-ink: #5a4000;
+  --good: #1f9d5c;
+  --good-soft: #dcf5e8;
+  --bad: #d64545;
+  --bad-soft: #fde3e3;
+  --font: "Fredoka", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --r: 22px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: var(--font);
+  color: #fff;
+  background: radial-gradient(120% 80% at 50% 0%, var(--sky2) 0%, var(--sky1) 70%) fixed, var(--sky1);
+  min-height: 100dvh;
+  overscroll-behavior: none;
+  -webkit-user-select: none; user-select: none;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff9 50%, transparent 51%),
+    radial-gradient(1px 1px at 27% 62%, #fff8 50%, transparent 51%),
+    radial-gradient(2px 2px at 44% 9%, #ffe9a6 50%, transparent 51%),
+    radial-gradient(1px 1px at 63% 35%, #fff9 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 81% 14%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 91% 58%, #fff8 50%, transparent 51%),
+    radial-gradient(2px 2px at 8% 84%, #ffe9a6 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 88%, #fff8 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 52% 74%, #fff7 50%, transparent 51%);
+}
+#app {
+  position: relative; z-index: 1;
+  max-width: 540px; margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 24px);
+}
+button { font-family: inherit; cursor: pointer; border: 0; color: inherit; }
+input { font-family: inherit; }
+h1, h2, h3 { margin: 0; font-weight: 700; }
+
+.topbar { display: flex; align-items: center; gap: 10px; min-height: 48px; margin-bottom: 10px; }
+.topbar .title { flex: 1; font-size: 20px; font-weight: 600; }
+.iconbtn {
+  width: 48px; height: 48px; border-radius: 16px; flex: none;
+  background: #ffffff1f; font-size: 22px; display: grid; place-items: center;
+}
+.iconbtn:active { transform: scale(.94); }
+.starpill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gold); color: var(--gold-ink); font-weight: 700;
+  padding: 8px 14px; border-radius: 999px; font-size: 18px;
+}
+
+.hero { text-align: center; padding: 10px 0 18px; }
+.hero h1 { font-size: clamp(28px, 8.6vw, 38px); white-space: nowrap; letter-spacing: .5px; text-shadow: 0 3px 0 #0004; }
+.hero h1 .spark { display: inline-block; animation: twinkle 2.4s infinite ease-in-out; }
+.hero p { margin: 6px 0 0; font-size: 19px; color: #e6dcff; }
+
+.players { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pcard {
+  background: var(--card); color: var(--ink); border-radius: var(--r);
+  padding: 10px 10px 14px; text-align: center; position: relative;
+  box-shadow: 0 6px 0 #0003;
+}
+.pcard:active { transform: translateY(3px); box-shadow: 0 3px 0 #0003; }
+.pcard .av { width: 100%; max-width: 140px; aspect-ratio: 200/240; margin: 0 auto; display: block; }
+.pcard .name { font-size: 24px; font-weight: 700; margin-top: 2px; overflow-wrap: anywhere; }
+.pcard .meta { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.badge { font-size: 14px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--magic-soft); color: var(--magic); }
+.badge.gold { background: #fff3c9; color: var(--gold-ink); }
+.pcard.add { display: grid; place-items: center; min-height: 200px; background: #ffffff14; color: #fff; border: 3px dashed #ffffff55; box-shadow: none; }
+.pcard.add .plus { font-size: 48px; line-height: 1; }
+.pcard.add .name { font-size: 19px; font-weight: 600; }
+
+.bigbtn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 64px; padding: 12px 18px; border-radius: 20px;
+  font-size: 22px; font-weight: 700;
+  background: var(--gold); color: var(--gold-ink); box-shadow: 0 6px 0 #b8871a;
+}
+.bigbtn:active { transform: translateY(4px); box-shadow: 0 2px 0 #b8871a; }
+.bigbtn.purple { background: var(--magic); color: #fff; box-shadow: 0 6px 0 #45237f; }
+.bigbtn.purple:active { box-shadow: 0 2px 0 #45237f; }
+.bigbtn.ghost { background: #ffffff1f; color: #fff; box-shadow: none; }
+.bigbtn.white { background: #fff; color: var(--ink); box-shadow: 0 6px 0 #0003; }
+.bigbtn:disabled { opacity: .45; }
+.stack { display: grid; gap: 14px; margin-top: 18px; }
+
+.panel { background: var(--card); color: var(--ink); border-radius: var(--r); padding: 18px; box-shadow: 0 6px 0 #0003; }
+.panel + .panel { margin-top: 14px; }
+.center { text-align: center; }
+.muted { color: var(--muted); }
+
+.me { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.me .av { width: 190px; aspect-ratio: 200/240; }
+.me .name { font-size: 34px; font-weight: 700; margin-top: 4px; }
+.me .meta { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+.me .meta .badge { font-size: 16px; }
+
+.section-title { font-size: 20px; font-weight: 600; margin: 22px 0 10px; color: #e6dcff; }
+.topics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.topic {
+  background: var(--card); color: var(--ink); border-radius: var(--r); padding: 16px 10px 14px;
+  text-align: center; box-shadow: 0 6px 0 #0003;
+}
+.topic:active { transform: translateY(3px); box-shadow: 0 3px 0 #0003; }
+.topic .emo { font-size: 46px; line-height: 1.1; }
+.topic .lbl { font-size: 19px; font-weight: 700; margin-top: 6px; }
+.topic.sel { outline: 4px solid var(--gold); }
+.topic:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+/* Quiz */
+.qhead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.dots { flex: 1; display: flex; gap: 6px; justify-content: center; }
+.dot { width: 16px; height: 16px; border-radius: 50%; background: #ffffff33; }
+.dot.now { background: #fff; transform: scale(1.2); }
+.dot.ok { background: #3ddc84; }
+.dot.no { background: #ff6b6b; }
+.turnchip {
+  display: flex; align-items: center; gap: 8px; margin: 0 auto 12px; width: fit-content;
+  background: #ffffff1f; padding: 4px 14px 4px 4px; border-radius: 999px; font-weight: 600; font-size: 18px;
+}
+.turnchip svg { width: 38px; height: 46px; background: #fff; border-radius: 999px; }
+.qcard { background: var(--card); color: var(--ink); border-radius: 26px; padding: 18px 18px 20px; box-shadow: 0 6px 0 #0003; position: relative; }
+.qemoji { font-size: 76px; line-height: 1.1; text-align: center; margin: 4px 0 8px; }
+.qtext { font-size: 23px; font-weight: 600; line-height: 1.35; text-align: center; }
+.lv-leicht .qtext { font-size: 26px; }
+.speak {
+  position: absolute; top: 12px; right: 12px; width: 54px; height: 54px; border-radius: 18px;
+  background: var(--magic-soft); color: var(--magic); font-size: 26px; display: grid; place-items: center;
+}
+.speak.on { background: var(--magic); color: #fff; animation: pulse 1s infinite; }
+.qnum { position: absolute; top: 18px; left: 18px; font-size: 15px; font-weight: 600; color: var(--muted); }
+.answers { display: grid; gap: 12px; margin-top: 16px; }
+.ans {
+  display: flex; align-items: center; gap: 14px; width: 100%; min-height: 66px;
+  padding: 10px 16px 10px 10px; border-radius: 20px; text-align: left;
+  background: var(--card); color: var(--ink); font-size: 21px; font-weight: 600; line-height: 1.25;
+  box-shadow: 0 5px 0 #0003; transition: transform .1s;
+}
+.lv-leicht .ans { font-size: 23px; min-height: 72px; }
+.ans:active { transform: translateY(3px); }
+.ans .k {
+  flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+  color: #fff; font-size: 22px; font-weight: 700;
+}
+.ans:nth-child(1) .k { background: #e8578a; }
+.ans:nth-child(2) .k { background: #3b8ef0; }
+.ans:nth-child(3) .k { background: #f59e0b; }
+.ans:nth-child(4) .k { background: #22b07d; }
+.ans.right { background: var(--good-soft); outline: 4px solid var(--good); }
+.ans.right .k { background: var(--good); }
+.ans.wrong { background: var(--bad-soft); outline: 4px solid var(--bad); }
+.ans.wrong .k { background: var(--bad); }
+.ans.dim { opacity: .45; }
+.answers.locked .ans { pointer-events: none; }
+
+.feedback { margin-top: 14px; border-radius: 22px; padding: 16px; color: var(--ink); animation: pop .3s ease-out; }
+.feedback.good { background: var(--good-soft); }
+.feedback.bad { background: #fff1dc; }
+.feedback h3 { font-size: 26px; }
+.feedback.good h3 { color: var(--good); }
+.feedback.bad h3 { color: #b45309; }
+.feedback p { margin: 8px 0 0; font-size: 19px; line-height: 1.4; }
+.feedback .row { display: flex; gap: 10px; align-items: center; }
+.feedback .row h3 { flex: 1; }
+.feedback .mini-speak { width: 46px; height: 46px; border-radius: 14px; background: #fff; color: var(--magic); font-size: 22px; flex: none; }
+.feedback .bigbtn { margin-top: 14px; }
+
+/* Handoff */
+.handoff { text-align: center; padding-top: 30px; }
+.handoff .phone { font-size: 56px; animation: wiggle 1.2s infinite ease-in-out; }
+.handoff h2 { font-size: 36px; margin-top: 8px; }
+.handoff p { font-size: 20px; color: #e6dcff; margin: 8px 0 0; }
+.handoff .av { width: 200px; aspect-ratio: 200/240; margin: 16px auto 0; display: block; background: #fff; border-radius: 32px; padding: 8px; }
+.score-strip { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 18px; }
+.score-strip span { background: #ffffff1f; padding: 6px 12px; border-radius: 999px; font-weight: 600; font-size: 17px; }
+
+/* Result */
+.result { text-align: center; }
+.result .av { width: 210px; aspect-ratio: 200/240; margin: 0 auto; display: block; animation: hop 1.2s infinite ease-in-out; }
+.result h2 { font-size: 34px; margin-top: 6px; }
+.result .big { font-size: 22px; margin: 6px 0 0; color: #e6dcff; }
+.bigstars { font-size: 46px; letter-spacing: 6px; margin-top: 8px; }
+.bigstars .off { filter: grayscale(1) opacity(.35); }
+.earned { display: inline-flex; margin-top: 14px; font-size: 22px; }
+.hint { margin-top: 14px; background: #ffffff1f; border-radius: 18px; padding: 12px 14px; font-size: 18px; }
+
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin-top: 20px; }
+.pod { flex: 1; max-width: 150px; text-align: center; }
+.pod .av { width: 100%; aspect-ratio: 200/240; animation: none; }
+.pod .blk { background: var(--card); color: var(--ink); border-radius: 16px 16px 6px 6px; padding: 8px 4px; font-weight: 700; }
+.pod .blk .pl { font-size: 30px; }
+.pod .blk .nm { font-size: 18px; overflow-wrap: anywhere; }
+.pod .blk .sc { font-size: 16px; color: var(--muted); font-weight: 600; }
+.pod.p1 .blk { min-height: 130px; background: #fff3c9; }
+.pod.p2 .blk { min-height: 100px; }
+.pod.p3 .blk { min-height: 80px; }
+.pod.p4 .blk { min-height: 64px; }
+.pod.p1 .av { animation: hop 1.2s infinite ease-in-out; }
+
+/* Wardrobe */
+.wtop { position: sticky; top: 0; z-index: 3; margin: calc(-14px - env(safe-area-inset-top)) -16px 0; padding: calc(env(safe-area-inset-top) + 14px) 16px 10px; background: linear-gradient(var(--sky1) 85%, #1d124500); }
+.wprev { display: flex; align-items: center; gap: 14px; }
+.wprev .av { width: 118px; aspect-ratio: 200/240; background: #fff; border-radius: 26px; padding: 4px; flex: none; }
+.wprev .info { flex: 1; min-width: 0; }
+.wprev .info .name { font-size: 26px; font-weight: 700; overflow-wrap: anywhere; }
+.wprev .info .starpill { margin-top: 8px; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0 4px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; padding: 10px 16px; border-radius: 999px; background: #ffffff1f; font-size: 18px; font-weight: 600; min-height: 46px; }
+.tab.sel { background: #fff; color: var(--ink); }
+.items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.item { background: var(--card); color: var(--ink); border-radius: 18px; padding: 6px 6px 10px; text-align: center; box-shadow: 0 4px 0 #0003; position: relative; }
+.item:active { transform: translateY(2px); }
+.item svg { width: 100%; aspect-ratio: 200/240; display: block; }
+.item .swatch { width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
+.item .swatch i { width: 64%; aspect-ratio: 1; border-radius: 50%; border: 3px solid #0002; }
+.item .nm { font-size: 15px; font-weight: 600; line-height: 1.15; min-height: 2.3em; display: grid; place-items: center; }
+.item .pr { margin-top: 4px; font-size: 15px; font-weight: 700; border-radius: 999px; padding: 3px 0; background: #fff3c9; color: var(--gold-ink); }
+.item .pr.own { background: var(--magic-soft); color: var(--magic); }
+.item .pr.on { background: var(--good); color: #fff; }
+.item.worn { outline: 4px solid var(--good); }
+.item.locked svg, .item.locked .swatch { opacity: .55; }
+.item.cant { animation: shake .35s; }
+
+/* Forms */
+.field { margin-top: 16px; }
+.field label { display: block; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.field input[type=text] {
+  width: 100%; font-size: 22px; padding: 14px 16px; border-radius: 16px;
+  border: 3px solid var(--line); color: var(--ink); background: var(--card-sunk); -webkit-user-select: text; user-select: text;
+}
+.field input[type=text]:focus { outline: none; border-color: var(--magic); }
+.choice { display: grid; gap: 10px; }
+.opt {
+  display: flex; gap: 12px; align-items: center; text-align: left; width: 100%;
+  padding: 14px; border-radius: 18px; background: var(--card-sunk); color: var(--ink); border: 3px solid transparent;
+}
+.opt.sel { border-color: var(--magic); background: var(--magic-soft); }
+.opt .emo { font-size: 34px; }
+.opt b { font-size: 20px; display: block; }
+.opt small { font-size: 16px; color: var(--muted); }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; background: var(--card-sunk); border-radius: 18px; font-size: 19px; font-weight: 600; width: 100%; color: var(--ink); text-align: left; }
+.sw { width: 60px; height: 34px; border-radius: 999px; background: #c9c1da; position: relative; flex: none; transition: background .2s; }
+.sw::after { content: ""; position: absolute; top: 4px; left: 4px; width: 26px; height: 26px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 2px 4px #0003; }
+.sw.on { background: var(--good); }
+.sw.on::after { transform: translateX(26px); }
+.danger { background: var(--bad-soft); color: var(--bad); font-size: 18px; font-weight: 600; padding: 14px; border-radius: 16px; width: 100%; margin-top: 22px; }
+
+.pickrow { display: grid; gap: 10px; }
+.pick { display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; border-radius: 20px; background: var(--card); color: var(--ink); text-align: left; width: 100%; border: 4px solid transparent; }
+.pick svg { width: 58px; height: 70px; flex: none; }
+.pick .nm { flex: 1; font-size: 22px; font-weight: 700; }
+.pick .ck { width: 38px; height: 38px; border-radius: 12px; border: 3px solid var(--line); display: grid; place-items: center; font-size: 22px; color: #fff; }
+.pick.sel { border-color: var(--gold); }
+.pick.sel .ck { background: var(--good); border-color: var(--good); }
+
+/* Modal / toast */
+.modal-bg { position: fixed; inset: 0; background: #0009; z-index: 20; display: grid; place-items: center; padding: 16px; animation: fade .2s; }
+.modal { background: var(--card); color: var(--ink); border-radius: 26px; padding: 22px; width: 100%; max-width: 420px; text-align: center; animation: pop .25s ease-out; }
+.modal h3 { font-size: 26px; }
+.modal p { font-size: 19px; margin: 10px 0 0; color: var(--muted); }
+.modal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.modal .bigbtn { font-size: 19px; min-height: 56px; }
+.modal .bigbtn.ghost { background: var(--card-sunk); color: var(--ink); }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 24px); transform: translateX(-50%); background: #fff; color: var(--ink); padding: 12px 20px; border-radius: 999px; font-size: 18px; font-weight: 600; z-index: 30; box-shadow: 0 6px 20px #0005; animation: pop .25s ease-out; max-width: calc(100% - 32px); text-align: center; }
+
+.footer { display: flex; justify-content: center; gap: 10px; margin-top: 26px; }
+.footer .iconbtn { width: auto; padding: 0 16px; font-size: 17px; font-weight: 600; gap: 8px; display: flex; align-items: center; }
+
+.spark-layer { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
+.spark-layer i { position: absolute; font-style: normal; font-size: 26px; animation: fly 1.1s ease-out forwards; }
+
+@keyframes twinkle { 0%,100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.25) rotate(15deg); } }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 #6c3fc580; } 50% { box-shadow: 0 0 0 8px #6c3fc500; } }
+@keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes wiggle { 0%,100% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+@keyframes fly { from { transform: translate(0,0) scale(.6); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(40deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 360px) {
+  .qtext { font-size: 21px; } .lv-leicht .qtext { font-size: 23px; }
+  .ans { font-size: 19px; } .lv-leicht .ans { font-size: 21px; }
+  .items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="padding:20px;font-size:20px">Bitte JavaScript einschalten, damit das Zauber-Quiz funktioniert.</p></noscript>
+
+<script>
+"use strict";
+
+/* ================================================================
+   FRAGEN
+   Format: [Thema, Stufe, Emoji, Frage, [richtige Antwort, falsche …], Zusatzwissen]
+   Stufe "l" = leicht (Zauberlehrling), "s" = schwer (Meistermagier)
+   Neue Fragen einfach unten ergänzen – die erste Antwort ist immer die richtige.
+   ================================================================ */
+const Q = [
+  // ---------- Allgemeinwissen · leicht ----------
+  ["welt","l","🇮🇹","Zu welchem Land gehört diese Flagge?",["Italien","Frankreich","Irland"],"Aus Italien kommen Pizza und Spaghetti."],
+  ["welt","l","🇫🇷","Zu welchem Land gehört diese Flagge?",["Frankreich","Italien","Niederlande"],"In Frankreichs Hauptstadt Paris steht der Eiffelturm."],
+  ["welt","l","🇪🇸","Zu welchem Land gehört diese Flagge?",["Spanien","Portugal","Belgien"],"In Spanien sagt man „Hola“ zur Begrüßung."],
+  ["welt","l","🇯🇵","Zu welchem Land gehört diese Flagge?",["Japan","China","Kanada"],"Japan nennt man auch „Land der aufgehenden Sonne“."],
+  ["welt","l","🇬🇷","Zu welchem Land gehört diese Flagge?",["Griechenland","Finnland","Schweden"],"In Griechenland gab es die allerersten Olympischen Spiele."],
+  ["welt","l","🇩🇪","Wie heißt die Hauptstadt von Deutschland?",["Berlin","München","Hamburg"],"Berlin ist auch die größte Stadt Deutschlands."],
+  ["welt","l","🗼","In welcher Stadt steht der Eiffelturm?",["Paris","London","Rom"],"Der Eiffelturm ist über 300 Meter hoch."],
+  ["welt","l","🦒","Welches Tier hat den längsten Hals?",["Giraffe","Elefant","Kamel"],"Die Giraffe hat genau so viele Halswirbel wie du: sieben!"],
+  ["welt","l","🐋","Welches ist das größte Tier der Welt?",["Blauwal","Elefant","Weißer Hai"],"Ein Blauwal kann so lang werden wie zwei Busse."],
+  ["welt","l","🕷️","Wie viele Beine hat eine Spinne?",["Acht","Sechs","Zehn"],"Insekten haben sechs Beine – Spinnen sind also keine Insekten."],
+  ["welt","l","🐙","Wie viele Arme hat ein Krake?",["Acht","Sechs","Zwölf"],"Ein Krake hat sogar drei Herzen."],
+  ["welt","l","🐝","Was machen Bienen aus Blütennektar?",["Honig","Marmelade","Sirup"],"Für ein Glas Honig fliegen Bienen zu Millionen Blüten."],
+  ["welt","l","☀️","Welcher Planet ist der Sonne am nächsten?",["Merkur","Mars","Jupiter"],"Merkur ist auch der kleinste Planet in unserem Sonnensystem."],
+  ["welt","l","🪐","Welcher Planet hat die berühmten großen Ringe?",["Saturn","Mars","Venus"],"Die Ringe des Saturn bestehen aus Eis und Gestein."],
+  ["welt","l","🌙","Was kreist um die Erde?",["Der Mond","Die Sonne","Der Mars"],"Der Mond braucht ungefähr einen Monat für eine Runde."],
+  ["welt","l","❤️","Welches Organ pumpt das Blut durch deinen Körper?",["Das Herz","Die Lunge","Der Magen"],"Dein Herz schlägt ungefähr 100.000 Mal am Tag."],
+  ["welt","l","🦷","Wie viele Milchzähne hat ein Kind?",["20","32","10"],"Später wachsen bis zu 32 bleibende Zähne."],
+  ["welt","l","🏔️","Wie heißt der höchste Berg der Welt?",["Mount Everest","Zugspitze","Mont Blanc"],"Die Zugspitze ist der höchste Berg Deutschlands."],
+  ["welt","l","🐧","Wo leben Pinguine?",["Auf der Südhalbkugel","Am Nordpol","In Grönland"],"Am Nordpol leben Eisbären – aber keine Pinguine."],
+  ["welt","l","🦇","Welches Säugetier kann richtig fliegen?",["Fledermaus","Eichhörnchen","Maulwurf"],"Fledermäuse finden sich im Dunkeln mit Ultraschall zurecht."],
+  ["welt","l","🐸","Wie nennt man ein Frosch-Baby?",["Kaulquappe","Welpe","Küken"],"Kaulquappen leben im Wasser und atmen mit Kiemen."],
+  ["welt","l","🧊","Bei wie viel Grad gefriert Wasser?",["0 Grad","10 Grad","100 Grad"],"Bei 100 Grad kocht Wasser."],
+  ["welt","l","🐫","Was speichert ein Kamel in seinem Höcker?",["Fett","Wasser","Sand"],"Vom Fett im Höcker kann ein Kamel lange ohne Futter leben."],
+  ["welt","l","🦁","Wie nennt man eine Gruppe von Löwen?",["Rudel","Schwarm","Herde"],"Im Rudel gehen vor allem die Löwinnen auf die Jagd."],
+  ["welt","l","🌋","Was kommt aus einem Vulkan?",["Lava","Wasser","Schnee"],"Lava ist geschmolzenes Gestein und über 1000 Grad heiß."],
+  ["welt","l","📚","Welche Brüder schrieben Märchen wie „Hänsel und Gretel“ auf?",["Die Brüder Grimm","Die Brüder Wright","Die Brüder Mario"],"Die Brüder Grimm hießen Jacob und Wilhelm."],
+  ["welt","l","🌱","Was brauchen Pflanzen zum Wachsen?",["Licht und Wasser","Nur Dunkelheit","Limonade"],"Aus Licht machen Pflanzen ihre eigene Nahrung."],
+  ["welt","l","🐢","Welches Tier trägt sein Haus auf dem Rücken?",["Schildkröte","Igel","Hase"],"Manche Schildkröten werden über 100 Jahre alt."],
+  ["welt","l","🌍","Wie heißt der Planet, auf dem wir leben?",["Erde","Mars","Venus"],"Die Erde ist zum größten Teil mit Wasser bedeckt."],
+  ["welt","l","🕰️","In welcher Stadt steht die berühmte Uhr „Big Ben“?",["London","Berlin","New York"],"Eigentlich heißt nur die große Glocke im Turm „Big Ben“."],
+
+  // ---------- Allgemeinwissen · schwer ----------
+  ["welt","s","🇦🇺","Wie heißt die Hauptstadt von Australien?",["Canberra","Sydney","Melbourne","Perth"],"Canberra wurde extra als Hauptstadt gebaut, weil Sydney und Melbourne sich nicht einigen konnten."],
+  ["welt","s","🇨🇦","Wie heißt die Hauptstadt von Kanada?",["Ottawa","Toronto","Vancouver","Montreal"],"Toronto ist zwar die größte Stadt, aber Ottawa ist die Hauptstadt."],
+  ["welt","s","🥇","Welches chemische Symbol hat Gold?",["Au","Ag","Go","Gd"],"„Au“ kommt vom lateinischen „aurum“. Ag steht für Silber."],
+  ["welt","s","🧲","Welches Metall ist bei Raumtemperatur flüssig?",["Quecksilber","Blei","Zinn","Aluminium"],"Quecksilber wurde früher in Fieberthermometern verwendet."],
+  ["welt","s","🧬","Wo in der Zelle liegt der größte Teil des Erbguts?",["Im Zellkern","In den Mitochondrien","In der Zellmembran","In den Ribosomen"],"Mitochondrien haben ein kleines bisschen eigenes Erbgut."],
+  ["welt","s","🌊","Welcher ist der größte Ozean der Erde?",["Pazifik","Atlantik","Indischer Ozean","Arktischer Ozean"],"Der Pazifik ist größer als alle Landflächen der Erde zusammen."],
+  ["welt","s","🧱","In welchem Jahr fiel die Berliner Mauer?",["1989","1961","1990","1975"],"1961 wurde die Mauer gebaut, 1990 folgte die Wiedervereinigung."],
+  ["welt","s","🖼️","Wer malte die „Mona Lisa“?",["Leonardo da Vinci","Michelangelo","Pablo Picasso","Vincent van Gogh"],"Die Mona Lisa hängt im Louvre in Paris."],
+  ["welt","s","🎼","Welcher Komponist schrieb große Werke, obwohl er taub wurde?",["Ludwig van Beethoven","Wolfgang Amadeus Mozart","Johann Sebastian Bach","Antonio Vivaldi"],"Seine 9. Sinfonie komponierte Beethoven, als er fast nichts mehr hörte."],
+  ["welt","s","⚡","In welcher Einheit misst man elektrische Spannung?",["Volt","Watt","Ampere","Ohm"],"Eine Steckdose in Deutschland hat 230 Volt."],
+  ["welt","s","🪐","Welcher ist der größte Planet unseres Sonnensystems?",["Jupiter","Saturn","Neptun","Uranus"],"In den Jupiter würde die Erde über 1000 Mal hineinpassen."],
+  ["welt","s","☀️","Wie lange braucht das Sonnenlicht ungefähr bis zur Erde?",["Etwa 8 Minuten","Etwa 8 Sekunden","Etwa 8 Stunden","Etwa 8 Tage"],"Du siehst die Sonne also immer so, wie sie vor 8 Minuten war."],
+  ["welt","s","🦠","Was entdeckte Alexander Fleming 1928?",["Penicillin","Röntgenstrahlen","Insulin","Die DNA"],"Penicillin war das erste Antibiotikum und hat Millionen Leben gerettet."],
+  ["welt","s","🔭","Wer entwickelte die Relativitätstheorie?",["Albert Einstein","Isaac Newton","Galileo Galilei","Marie Curie"],"Die berühmteste Formel daraus ist E = mc²."],
+  ["welt","s","☢️","In welchen Fächern bekam Marie Curie ihre zwei Nobelpreise?",["Physik und Chemie","Medizin und Physik","Frieden und Chemie","Literatur und Physik"],"Sie war der erste Mensch, der zwei Nobelpreise gewann."],
+  ["welt","s","🇪🇺","Wie viele Länder gehören zur Europäischen Union?",["27","28","25","30"],"Bis zum Brexit 2020 waren es 28."],
+  ["welt","s","🗺️","Welches Land hat die meisten Einwohner?",["Indien","China","USA","Indonesien"],"Indien hat China im Jahr 2023 überholt."],
+  ["welt","s","📜","Wer schrieb „Faust“?",["Johann Wolfgang von Goethe","Friedrich Schiller","Franz Kafka","Gotthold Ephraim Lessing"],"Goethe arbeitete fast 60 Jahre lang an „Faust“."],
+  ["welt","s","🌿","Wie heißt der Vorgang, bei dem Pflanzen aus Licht, Wasser und CO₂ Zucker herstellen?",["Photosynthese","Osmose","Gärung","Verdunstung"],"Dabei entsteht auch der Sauerstoff, den wir atmen."],
+  ["welt","s","🦴","Wie viele Knochen hat ein erwachsener Mensch ungefähr?",["206","106","306","150"],"Babys haben noch mehr Knochen – einige wachsen später zusammen."],
+  ["welt","s","📐","Wie groß ist die Winkelsumme in einem Dreieck?",["180 Grad","360 Grad","90 Grad","270 Grad"],"Im Viereck sind es 360 Grad."],
+  ["welt","s","🔢","Was ist die Quadratwurzel aus 144?",["12","14","11","16"],"12 × 12 = 144."],
+  ["welt","s","🚀","Wer betrat 1969 als erster Mensch den Mond?",["Neil Armstrong","Buzz Aldrin","Juri Gagarin","Sigmund Jähn"],"Gagarin war 1961 der erste Mensch im Weltall."],
+  ["welt","s","🗽","Welches Land schenkte den USA die Freiheitsstatue?",["Frankreich","Großbritannien","Spanien","Italien"],"Das Geschenk kam 1886 in New York an."],
+  ["welt","s","🗣️","Welche Sprache hat die meisten Muttersprachler der Welt?",["Mandarin-Chinesisch","Englisch","Spanisch","Hindi"],"Englisch wird aber insgesamt von den meisten Menschen gesprochen."],
+  ["welt","s","🦖","In welchem Erdzeitalter lebte der Tyrannosaurus rex?",["Kreidezeit","Jura","Trias","Eiszeit"],"Trotz „Jurassic Park“: Der T. rex lebte erst in der Kreidezeit."],
+  ["welt","s","🏺","Wie nannte man die Könige im alten Ägypten?",["Pharaonen","Zaren","Sultane","Kaiser"],"Tutanchamun ist einer der bekanntesten Pharaonen."],
+  ["welt","s","💧","Welche chemische Formel hat Wasser?",["H₂O","CO₂","O₂","NaCl"],"NaCl ist Kochsalz, CO₂ ist Kohlendioxid."],
+
+  // ---------- Disney & Pixar · leicht ----------
+  ["disney","l","❄️","Wie heißt Elsas Schwester in „Die Eiskönigin“?",["Anna","Arielle","Belle"],"Anna und Elsa leben im Königreich Arendelle."],
+  ["disney","l","⛄","Wie heißt der lustige Schneemann in „Die Eiskönigin“?",["Olaf","Sven","Hans"],"Olaf liebt warme Umarmungen."],
+  ["disney","l","🦌","Wie heißt Kristoffs Rentier?",["Sven","Olaf","Bambi"],"Sven liebt Karotten."],
+  ["disney","l","🧜‍♀️","Wie heißt die kleine Meerjungfrau bei Disney?",["Arielle","Cinderella","Vaiana"],"Arielle sammelt Dinge von den Menschen."],
+  ["disney","l","🦀","Wie heißt die Krabbe, die auf Arielle aufpasst?",["Sebastian","Fabius","Olaf"],"Fabius ist Arielles Fisch-Freund."],
+  ["disney","l","🐠","Wen sucht Marlin in „Findet Nemo“?",["Seinen Sohn Nemo","Seine Freundin Dorie","Einen Hai"],"Nemo ist ein Clownfisch."],
+  ["disney","l","🦁","Wie heißt der junge Löwe in „Der König der Löwen“?",["Simba","Scar","Timon"],"Simba bedeutet auf Suaheli „Löwe“."],
+  ["disney","l","🤠","Wie heißt der Cowboy in „Toy Story“?",["Woody","Buzz","Rex"],"Woody ist eine Spielzeugpuppe mit Zugschnur."],
+  ["disney","l","🚀","Wer ruft: „Bis zur Unendlichkeit und noch viel weiter!“?",["Buzz Lightyear","Woody","Nemo"],"Buzz glaubt am Anfang, er sei ein echter Weltraumheld."],
+  ["disney","l","🌊","Wie heißt der Halbgott in „Vaiana“?",["Maui","Olaf","Simba"],"Maui kann sich mit seinem Angelhaken in Tiere verwandeln."],
+  ["disney","l","🐓","Wie heißt Vaianas verrückter Hahn?",["Heihei","Pua","Sven"],"Pua ist Vaianas kleines Schwein."],
+  ["disney","l","🦋","Wie heißt die Familie in „Encanto“?",["Madrigal","Mendoza","Martinez"],"Jedes Familienmitglied bekommt eine magische Gabe – außer Mirabel."],
+  ["disney","l","💪","Welche Gabe hat Luisa in „Encanto“?",["Sie ist superstark","Sie macht das Wetter","Sie spricht mit Tieren"],"Pepa macht das Wetter und Antonio spricht mit Tieren."],
+  ["disney","l","🏎️","Wie heißt das rote Rennauto in „Cars“?",["Lightning McQueen","Hook","Sally"],"Hook ist ein rostiger Abschleppwagen und McQueens bester Freund."],
+  ["disney","l","🐀","Welches Tier kocht in „Ratatouille“?",["Eine Ratte","Eine Katze","Ein Hund"],"Die Ratte heißt Rémy und lebt in Paris."],
+  ["disney","l","🌹","Wie heißt die Schöne in „Die Schöne und das Biest“?",["Belle","Anna","Rapunzel"],"Belle liebt Bücher über alles."],
+  ["disney","l","👱‍♀️","Was ist an Rapunzel ganz besonders lang?",["Ihre Haare","Ihre Nase","Ihre Fingernägel"],"Rapunzels Haare sind im Film über 20 Meter lang."],
+  ["disney","l","😊","Wie heißt die fröhliche Emotion in „Alles steht Kopf“?",["Freude","Kummer","Wut"],"Die anderen Emotionen heißen Kummer, Wut, Angst und Ekel."],
+  ["disney","l","🐘","Welcher Elefant kann mit seinen großen Ohren fliegen?",["Dumbo","Bambi","Balu"],"Bambi ist ein Reh, Balu ein Bär."],
+  ["disney","l","🐰","Was für ein Tier ist Judy Hopps in „Zoomania“?",["Ein Hase","Ein Fuchs","Ein Faultier"],"Judy ist die erste Hasen-Polizistin der Stadt."],
+  ["disney","l","🎈","Womit fliegt das Haus in „Oben“?",["Mit Luftballons","Mit Raketen","Mit Flügeln"],"Es sind tausende bunte Luftballons."],
+  ["disney","l","🐻","Wie heißt der gemütliche Bär im „Dschungelbuch“?",["Balu","Baghira","Kaa"],"Baghira ist ein Panther, Kaa eine Schlange."],
+  ["disney","l","👠","Was verliert Cinderella auf der Treppe?",["Einen gläsernen Schuh","Ihren Hut","Einen Ring"],"Mit dem Schuh findet der Prinz sie wieder."],
+  ["disney","l","🍎","Wie viele Zwerge wohnen bei Schneewittchen?",["Sieben","Fünf","Zehn"],"Einer von ihnen heißt Happy, ein anderer Brummbär."],
+  ["disney","l","🐻","In welches Tier wird Meridas Mutter verwandelt?",["In einen Bären","In einen Vogel","In einen Frosch"],"Merida ist eine tolle Bogenschützin."],
+
+  // ---------- Disney & Pixar · schwer ----------
+  ["disney","s","🍎","Welcher war 1937 der erste abendfüllende Disney-Zeichentrickfilm?",["Schneewittchen und die sieben Zwerge","Pinocchio","Bambi","Cinderella"],"Viele hielten das Projekt damals für verrückt – es wurde ein Riesenerfolg."],
+  ["disney","s","🐭","In welchem Jahr hatte Micky Maus in „Steamboat Willie“ ihren großen Auftritt?",["1928","1938","1918","1948"],"Es war einer der ersten Zeichentrickfilme mit Ton."],
+  ["disney","s","🎬","Welcher war der erste komplett am Computer animierte Kinofilm?",["Toy Story","Das große Krabbeln","Findet Nemo","Shrek"],"Toy Story kam 1995 ins Kino. Shrek stammt übrigens von DreamWorks."],
+  ["disney","s","🏢","Welches Animationsstudio kaufte Disney im Jahr 2006?",["Pixar","DreamWorks","Marvel","Lucasfilm"],"Marvel folgte 2009, Lucasfilm (Star Wars) 2012."],
+  ["disney","s","🦁","Welches Theaterstück von Shakespeare diente als Vorbild für „Der König der Löwen“?",["Hamlet","Romeo und Julia","Macbeth","Ein Sommernachtstraum"],"Auch bei Hamlet tötet der Onkel den König, um selbst zu herrschen."],
+  ["disney","s","🐠","In welcher Stadt landet Nemo im Aquarium eines Zahnarztes?",["Sydney","Melbourne","Perth","Auckland"],"Die Adresse „P. Sherman, 42 Wallaby Way, Sydney“ ist legendär."],
+  ["disney","s","🤖","Was ist WALL·Es Aufgabe auf der verlassenen Erde?",["Müll zusammenpressen","Pflanzen gießen","Häuser bauen","Raketen reparieren"],"Sein Name steht für „Waste Allocation Load Lifter – Earth-Class“."],
+  ["disney","s","💀","Welcher Feiertag steht in „Coco“ im Mittelpunkt?",["Día de los Muertos","Weihnachten","Karneval","Halloween"],"Am mexikanischen „Tag der Toten“ erinnert man sich an verstorbene Verwandte."],
+  ["disney","s","🐉","Wie heißt der kleine Drache in „Mulan“?",["Mushu","Cri-Kee","Khan","Shan Yu"],"Cri-Kee ist die Glücksgrille, Khan ist Mulans Pferd."],
+  ["disney","s","👾","Womit wird die Stadt Monstropolis in „Die Monster AG“ anfangs mit Energie versorgt?",["Mit Kinderschreien","Mit Sonnenenergie","Mit Wasserkraft","Mit Honig"],"Am Ende merken die Monster: Kinderlachen liefert viel mehr Energie."],
+  ["disney","s","🔮","Über wen „spricht man nicht“ in „Encanto“?",["Bruno","Camilo","Agustín","Félix"],"Bruno kann in die Zukunft sehen."],
+  ["disney","s","🏁","Welche Startnummer hat Lightning McQueen?",["95","43","86","1"],"Die 95 erinnert an 1995 – das Jahr, in dem Toy Story ins Kino kam."],
+  ["disney","s","👨‍🍳","Welches Motto hat der Meisterkoch Gusteau in „Ratatouille“?",["Jeder kann kochen","Nur Profis kochen","Weniger ist mehr","Liebe geht durch den Magen"],"Das Motto gibt der Ratte Rémy den Mut, Koch zu werden."],
+  ["disney","s","🐶","Wie heißt der Hund mit dem sprechenden Halsband in „Oben“?",["Dug","Kevin","Russell","Muntz"],"Kevin ist der bunte Riesenvogel, Russell der Pfadfinder."],
+  ["disney","s","🦸","Wer entwirft in „Die Unglaublichen“ die Superhelden-Anzüge?",["Edna Mode","Mirage","Violetta","Frozone"],"Ihre wichtigste Regel: Keine Capes!"],
+  ["disney","s","🦥","Was für ein Tier ist „Flash“, der im Amt von „Zoomania“ arbeitet?",["Ein Faultier","Eine Schildkröte","Eine Schnecke","Ein Koala"],"Die Szene mit Flash ist eine der bekanntesten Szenen des Films."],
+  ["disney","s","🔥","Welches Element ist Ember im Film „Elemental“?",["Feuer","Wasser","Luft","Erde"],"Wade, in den sie sich verliebt, ist ein Wasser-Element."],
+  ["disney","s","🧸","Wie heißt der Junge, dem Woody am Anfang von „Toy Story“ gehört?",["Andy","Sid","Al","Bonnie"],"Sid ist der Nachbarsjunge, der Spielzeug kaputt macht."],
+  ["disney","s","🐍","Welche Figur im „Dschungelbuch“ ist ein Tiger?",["Shir Khan","Baghira","Kaa","King Louie"],"Baghira ist ein schwarzer Panther, King Louie ein Orang-Utan."],
+  ["disney","s","🧞","Wie viele Wünsche erfüllt der Dschinni Aladdin?",["Drei","Einen","Fünf","Unendlich viele"],"Seinen letzten Wunsch nutzt Aladdin, um den Dschinni zu befreien."],
+  ["disney","s","🎤","Wie heißt Elsas Lied beim Bau ihres Eispalasts auf Deutsch?",["Lass jetzt los","Wo noch niemand war","Eiskalt und frei","Ich bin bereit"],"Im Englischen heißt das Lied „Let It Go“."],
+
+  // ---------- Harry Potter · leicht ----------
+  ["hp","l","⚡","Welche Form hat Harrys Narbe auf der Stirn?",["Einen Blitz","Einen Stern","Ein Herz"],"Die Narbe bekam Harry schon als Baby."],
+  ["hp","l","🦉","Wie heißt Harrys weiße Eule?",["Hedwig","Errol","Krätze"],"Errol ist die alte Eule der Weasleys, Krätze ist Rons Ratte."],
+  ["hp","l","🏰","Wie heißt die Zauberschule, auf die Harry geht?",["Hogwarts","Hogsmeade","Askaban"],"Hogsmeade ist ein Zauberdorf, Askaban das Zauberer-Gefängnis."],
+  ["hp","l","🧹","Wie heißt der Zauber-Sport, der auf Besen gespielt wird?",["Quidditch","Fußball","Besenball"],"Harry spielt als Sucher für Gryffindor."],
+  ["hp","l","🟡","Wie heißt der kleine goldene Ball mit Flügeln?",["Der Goldene Schnatz","Der Klatscher","Der Quaffel"],"Wer den Schnatz fängt, bekommt 150 Punkte."],
+  ["hp","l","👓","Wer sind Harrys beste Freunde?",["Ron und Hermine","Draco und Neville","Fred und George"],"Fred und George sind Rons Zwillingsbrüder."],
+  ["hp","l","🎩","Wer entscheidet, in welches Haus ein Schüler kommt?",["Der Sprechende Hut","Der Zauberstab","Hagrid"],"Harry wollte auf keinen Fall nach Slytherin."],
+  ["hp","l","🦁","Welches Tier gehört zum Haus Gryffindor?",["Ein Löwe","Eine Schlange","Ein Dachs"],"Slytherin hat eine Schlange, Hufflepuff einen Dachs, Ravenclaw einen Adler."],
+  ["hp","l","🐍","Welches Tier ist im Wappen von Slytherin?",["Eine Schlange","Ein Adler","Ein Löwe"],"Die Farben von Slytherin sind Grün und Silber."],
+  ["hp","l","🚂","Von welchem Gleis fährt der Hogwarts-Express?",["Gleis 9¾","Gleis 7½","Gleis 10"],"Man muss mutig durch die Wand zwischen Gleis 9 und 10 laufen."],
+  ["hp","l","🧙‍♂️","Wie heißt der Schulleiter mit dem langen weißen Bart?",["Albus Dumbledore","Severus Snape","Rubeus Hagrid"],"Dumbledore mag Zitronenbrausebonbons."],
+  ["hp","l","🐕","Wie heißt Hagrids riesiger Hund mit drei Köpfen?",["Fluffy","Fang","Seidenschnabel"],"Fluffy schläft ein, wenn man ihm Musik vorspielt."],
+  ["hp","l","🐸","Welche Süßigkeit hüpft weg, wenn man sie auspackt?",["Der Schokofrosch","Die Kürbispastete","Der Lakritz-Zauberstab"],"In jedem Schokofrosch steckt eine Sammelkarte."],
+  ["hp","l","🧥","Was kann Harrys besonderer Umhang?",["Unsichtbar machen","Fliegen","Warm zaubern"],"Den Tarnumhang hat Harry von seinem Vater geerbt."],
+  ["hp","l","🏠","Bei welcher Familie wächst Harry auf?",["Bei den Dursleys","Bei den Weasleys","Bei den Malfoys"],"Bei den Dursleys muss Harry im Schrank unter der Treppe schlafen."],
+  ["hp","l","🪶","Welcher Zauberspruch lässt Dinge schweben?",["Wingardium Leviosa","Expelliarmus","Lumos"],"Hermine sagt: „Es heißt LeviOsa, nicht LeviosA!“"],
+  ["hp","l","💡","Mit welchem Zauberspruch leuchtet die Spitze des Zauberstabs?",["Lumos","Nox","Accio"],"Mit „Nox“ geht das Licht wieder aus."],
+  ["hp","l","🧑‍🦰","Welche Haarfarbe haben alle Weasleys?",["Rot","Blond","Schwarz"],"Ron hat sechs Geschwister."],
+  ["hp","l","🐈","In welches Tier kann sich Professor McGonagall verwandeln?",["In eine Katze","In einen Hund","In eine Eule"],"Solche Zauberer nennt man Animagi."],
+  ["hp","l","✉️","Wer sagt zu Harry: „Du bist ein Zauberer, Harry!“?",["Hagrid","Dumbledore","Ron"],"Hagrid bringt Harry auch eine Geburtstagstorte mit."],
+
+  // ---------- Harry Potter · schwer ----------
+  ["hp","s","🦌","Welche Gestalt hat Harrys Patronus?",["Einen Hirsch","Einen Otter","Eine Hirschkuh","Einen Phönix"],"Hermines Patronus ist ein Otter, Snapes eine Hirschkuh – wie der von Lily."],
+  ["hp","s","🍀","Wie heißt der Trank, der für kurze Zeit Glück bringt?",["Felix Felicis","Veritaserum","Vielsaft-Trank","Amortentia"],"Veritaserum zwingt zur Wahrheit, Amortentia ist ein Liebestrank."],
+  ["hp","s","🔮","Wie viele Horkruxe hat Voldemort absichtlich erschaffen?",["Sechs","Sieben","Drei","Neun"],"Harry selbst wurde ungewollt zu einem weiteren Horkrux."],
+  ["hp","s","📖","Wer ist der „Halbblutprinz“?",["Severus Snape","Tom Riddle","Sirius Black","Remus Lupin"],"Snapes Mutter hieß Eileen Prince – daher der Name."],
+  ["hp","s","🐺","Welcher Hogwarts-Lehrer ist ein Werwolf?",["Remus Lupin","Gilderoy Lockhart","Horace Slughorn","Quirinus Quirrell"],"Snape braut ihm den Wolfsbann-Trank."],
+  ["hp","s","🐍","Wie heißt Voldemorts Schlange?",["Nagini","Aragog","Norbert","Basilisk"],"Aragog ist Hagrids Riesenspinne, Norbert sein Drachenbaby."],
+  ["hp","s","💀","Was gehört NICHT zu den Heiligtümern des Todes?",["Das Denkarium","Der Elderstab","Der Stein der Auferstehung","Der Tarnumhang"],"Im Denkarium kann man sich Erinnerungen ansehen."],
+  ["hp","s","🏆","Wer ist beim Trimagischen Turnier der Champion von Durmstrang?",["Viktor Krum","Cedric Diggory","Fleur Delacour","Cormac McLaggen"],"Krum ist außerdem ein berühmter Quidditch-Sucher."],
+  ["hp","s","🪞","Was zeigt der Spiegel Nerhegeb?",["Den tiefsten Herzenswunsch","Die Zukunft","Die Vergangenheit","Die Wahrheit"],"Lies „Nerhegeb“ mal rückwärts!"],
+  ["hp","s","🗺️","Mit welchem Satz öffnet man die Karte des Rumtreibers?",["Ich schwöre feierlich, ich bin ein Tunichtgut","Öffne dich, Hogwarts","Alohomora","Ich bin ein Rumtreiber"],"Zum Schließen sagt man: „Unfug vollbracht!“"],
+  ["hp","s","🎂","Wann hat Harry Potter Geburtstag?",["Am 31. Juli","Am 31. Oktober","Am 1. September","Am 24. Dezember"],"Am 1. September fährt jedes Jahr der Hogwarts-Express."],
+  ["hp","s","🔥","Wie heißt Dumbledores Phönix?",["Fawkes","Seidenschnabel","Hedwig","Errol"],"Phönixtränen können Wunden heilen."],
+  ["hp","s","🧦","Womit wird der Hauself Dobby befreit?",["Mit einer Socke","Mit einem Zauberstab","Mit einem Brief","Mit einem Schal"],"Ein Hauself ist frei, wenn sein Herr ihm Kleidung schenkt."],
+  ["hp","s","🖋️","Wie lautet Voldemorts richtiger Name?",["Tom Vorlost Riddle","Tom Morfin Gaunt","Thomas Salazar Riddle","Tom Marvin Slytherin"],"Die Buchstaben ergeben umgestellt: „Ist Lord Voldemort“."],
+  ["hp","s","🦅","Welches Haus hat in den Büchern die Farben Blau und Bronze?",["Ravenclaw","Hufflepuff","Slytherin","Gryffindor"],"Ravenclaws schätzen Klugheit und Witz."],
+  ["hp","s","🧪","Mit welchem Trank sieht man aus wie eine andere Person?",["Vielsaft-Trank","Veritaserum","Felix Felicis","Skele-Wachs"],"Hermine braut ihn schon im zweiten Schuljahr – auf einem Mädchenklo."],
+  ["hp","s","🚫","Welcher Zauber gehört NICHT zu den Unverzeihlichen Flüchen?",["Expelliarmus","Imperius","Cruciatus","Avada Kedavra"],"Expelliarmus entwaffnet nur – es ist Harrys Lieblingszauber."],
+  ["hp","s","📮","Wo wohnen die Dursleys?",["Ligusterweg 4","Grimmauldplatz 12","Winkelgasse 93","Spinner's End"],"Am Grimmauldplatz 12 steht das Haus der Familie Black."],
+  ["hp","s","⚗️","Welches Fach unterrichtet Snape die meisten Jahre?",["Zaubertränke","Verwandlung","Kräuterkunde","Wahrsagen"],"Erst im sechsten Schuljahr unterrichtet er Verteidigung gegen die dunklen Künste."],
+  ["hp","s","🦡","Wer ist Hauslehrerin von Hufflepuff?",["Professor Sprout","Professor McGonagall","Professor Trelawney","Madam Hooch"],"Professor Sprout unterrichtet Kräuterkunde."],
+  ["hp","s","🐲","Wie heißt Hagrids Drachenbaby im ersten Band?",["Norbert","Fluffy","Aragog","Grawp"],"Grawp ist Hagrids Halbbruder, ein Riese."],
+  ["hp","s","📚","Wer schrieb die Harry-Potter-Bücher?",["J. K. Rowling","Cornelia Funke","Michael Ende","Suzanne Collins"],"Der erste Band erschien 1997 in England."],
+  // ---------- Influencer · leicht ----------
+  ["influ","l","⛏️","Mit welchem Spiel wurde Paluten berühmt?",["Minecraft","Mario Kart","Tetris"],"Paluten heißt eigentlich Patrick Mayer."],
+  ["influ","l","🏝️","Wie heißt Palutens Minecraft-Abenteuer, das es auch als Bücher gibt?",["Freedom","Pixelwelt","Abenteuerland"],"In „Minecraft Freedom“ erlebt Paluten Abenteuer auf der Insel Schmahama."],
+  ["influ","l","🐷","Paluten hat einen besten Freund namens Edgar. Was für ein Tier ist Edgar?",["Ein Schwein","Eine Kuh","Ein Huhn"],"Edgar ist in den Freedom-Geschichten immer mit dabei."],
+  ["influ","l","🧢","Mit welchem Spiel hat LaserLuca auf YouTube angefangen?",["Minecraft","Schach","Fußball"],"Sein erster Kanal hieß „ConCrafter“."],
+  ["influ","l","🏆","Welcher YouTuber hat die meisten Abonnenten der ganzen Welt?",["MrBeast","Paluten","Checker Tobi"],"MrBeast hat 2026 als erster einzelner YouTuber über 500 Millionen Abonnenten geschafft."],
+  ["influ","l","🍫","Welche Süßigkeit verkauft MrBeast mit seiner Marke „Feastables“?",["Schokolade","Gummibärchen","Lollis"],"MrBeast heißt eigentlich Jimmy Donaldson."],
+  ["influ","l","🤷","Wofür ist Khaby Lame berühmt?",["Lustige Videos, in denen er nie spricht","Er singt Opern","Er baut Roboter"],"Er zeigt mit einer Handbewegung, dass komplizierte Tricks ganz einfach gehen."],
+  ["influ","l","🪄","Womit wurde Younes Zarou auf TikTok berühmt?",["Mit verblüffenden Video-Tricks","Mit Kochvideos","Mit Nachrichten"],"Younes Zarou ist der erfolgreichste deutsche TikToker."],
+  ["influ","l","💄","Mit welchem YouTube-Kanal wurde Bibi berühmt?",["BibisBeautyPalace","Bibis Bastelbude","Bibi und Tina"],"„Bibi und Tina“ ist eine Hörspielserie über eine kleine Hexe und ihr Pferd."],
+  ["influ","l","👧","Wie heißt der Bruder von Diana aus der „Kids Diana Show“?",["Roma","Luca","Tobi"],"Diana und Roma haben einen der größten Kinderkanäle der Welt."],
+  ["influ","l","🔍","Was macht Checker Tobi in seinen Sendungen?",["Er erklärt spannende Themen","Er spielt nur Videospiele","Er kocht nur Nudeln"],"Checker Tobi läuft im KiKA und auf YouTube."],
+  ["influ","l","🎮","Was ist ein „Let's Play“?",["Jemand spielt ein Spiel und redet dabei","Ein Brettspiel","Ein Sportverein"],"Paluten und LaserLuca sind mit Let's Plays bekannt geworden."],
+  ["influ","l","🏷️","Unter einem Video steht „Werbung“ oder „Anzeige“. Was bedeutet das?",["Jemand hat dafür bezahlt","Das Video ist besonders lustig","Das Video ist verboten"],"Influencer müssen Werbung kennzeichnen. Das Produkt ist also nicht unbedingt ihr echter Liebling."],
+  ["influ","l","🏠","Was solltest du im Internet NICHT verraten?",["Deine Adresse","Dein Lieblingstier","Deine Lieblingsfarbe"],"Auch Telefonnummer, Schule und Passwörter bleiben geheim."],
+  ["influ","l","🙋","Jemand Fremdes im Internet will sich mit dir treffen. Was machst du?",["Ich sage es sofort Mama oder Papa","Ich gehe alleine hin","Ich verrate es niemandem"],"Im Internet kann sich jeder als jemand anderes ausgeben."],
+  ["influ","l","🔔","Was bedeutet es, einen YouTube-Kanal zu abonnieren?",["Man folgt dem Kanal und sieht neue Videos","Man kauft ein Eis","Man löscht den Kanal"],"Ein Abo auf YouTube kostet nichts."],
+
+  // ---------- Influencer · schwer ----------
+  ["influ","s","🟣","Auf welcher Plattform wurde Papaplatte vor allem als Streamer bekannt?",["Twitch","LinkedIn","Pinterest","Snapchat"],"In der JIM-Studie 2025 war Papaplatte der Lieblings-Creator der Jugendlichen in Deutschland."],
+  ["influ","s","🎙️","Wie heißt der Podcast von Papaplatte?",["Edeltalk","Hobbylos","Gemischtes Hack","Baywatch Berlin"],"Papaplatte heißt eigentlich Kevin Teller."],
+  ["influ","s","🎧","Mit wem macht Rezo den Podcast „Hobbylos“?",["Julien Bam","Papaplatte","Paluten","LeFloid"],"Rezo und Julien Bam sind seit Jahren befreundet."],
+  ["influ","s","💙","Mit welchem Video sorgte Rezo 2019 vor der Europawahl für Riesenwirbel?",["„Die Zerstörung der CDU“","„Die Rettung der Welt“","„Deutschland wählt“","„Politik für Anfänger“"],"Das Video hatte in einer Woche über 10 Millionen Aufrufe – man sprach vom „Rezo-Effekt“."],
+  ["influ","s","🌲","Wer hat die Survival-Show „7 vs. Wild“ erfunden?",["Fritz Meinecke","Knossi","MrBeast","Julien Bam"],"„7 vs. Wild“ gilt als erfolgreichste YouTube-Serie im deutschsprachigen Raum."],
+  ["influ","s","🎒","Wie viele Gegenstände dürfen die Teilnehmer bei „7 vs. Wild“ mitnehmen?",["Sieben","Drei","Zehn","Keinen einzigen"],"Die erste Staffel spielte 2021 in Schweden, später ging es nach Panama und Kanada."],
+  ["influ","s","💃","In welcher TV-Show wurde Julia Beautx 2023 Zweite?",["Let's Dance","The Voice of Germany","Germany's Next Topmodel","Das Supertalent"],"Julia Beautx heißt eigentlich Julia Willecke und arbeitet heute auch als Schauspielerin."],
+  ["influ","s","🌴","In welcher Show wurde Twenty4tim 2024 Dritter?",["Ich bin ein Star – Holt mich hier raus!","Let's Dance","Promi Big Brother","The Masked Singer"],"Twenty4tim heißt eigentlich Tim Kampmann."],
+  ["influ","s","🦁","Wie heißt MrBeast mit echtem Namen?",["Jimmy Donaldson","Jimmy Fallon","James Charles","Logan Paul"],"2026 knackte er als erster einzelner Creator 500 Millionen Abonnenten."],
+  ["influ","s","📺","Wie heißt MrBeasts Show bei Prime Video, in der 1000 Leute um ein Riesen-Preisgeld spielen?",["Beast Games","Squid Game","Money Drop","Survivor"],"„Squid Game“ ist eine Netflix-Serie – die Beast Games sind davon inspiriert."],
+  ["influ","s","🤲","In welchem Land wurde Khaby Lame geboren?",["Senegal","Nigeria","Frankreich","Brasilien"],"Aufgewachsen ist er in Italien. Er ist der meistgefolgte TikToker der Welt."],
+  ["influ","s","🇩🇪","Wer ist nach Followern Deutschlands erfolgreichster TikToker?",["Younes Zarou","Twenty4tim","Julien Bam","Papaplatte"],"Younes Zarou hat über 57 Millionen Follower auf TikTok."],
+  ["influ","s","🕺","Womit wurde Julien Bam vor allem bekannt?",["Aufwendige Tanz- und Musikvideos","Minecraft-Let's-Plays","Schminktipps","Nachrichten"],"2017 war er der meistgesehene deutsche YouTuber."],
+  ["influ","s","🎤","Shirin David startete auf YouTube. Als was ist sie heute vor allem bekannt?",["Als Rapperin","Als Tennisprofi","Als Nachrichtensprecherin","Als Köchin"],"Sie hatte schon mehrere Nummer-eins-Hits in Deutschland."],
+  ["influ","s","🎥","Wen interviewte der YouTuber LeFloid im Jahr 2015?",["Angela Merkel","Barack Obama","Olaf Scholz","Papst Franziskus"],"Das war damals eine Sensation: die Kanzlerin bei einem YouTuber."],
+  ["influ","s","🕹️","Wofür gilt Gronkh in Deutschland als Pionier?",["Let's-Play-Videos","Beauty-Tutorials","Kochshows","Podcasts"],"Gronkh heißt eigentlich Erik Range."],
+  ["influ","s","⛏️","Wie heißt Paluten mit echtem Namen?",["Patrick Mayer","Paul Luten","Peter Maier","Pascal Müller"],"Seine Buchreihe „Minecraft Freedom“ wurde ein Bestseller."],
+  ["influ","s","⚽","Welcher Fußballer ist das große Idol von IShowSpeed?",["Cristiano Ronaldo","Lionel Messi","Neymar","Kylian Mbappé"],"Speed jubelt deshalb oft mit Ronaldos „Siuuu“."],
+  ["influ","s","🧠","Was entscheidet, welche Videos dir bei TikTok auf der „Für dich“-Seite gezeigt werden?",["Ein Algorithmus","Nur der Zufall","Deine Lehrer","Die Polizei"],"Er merkt sich zum Beispiel, wie lange du welche Videos anschaust."],
+  ["influ","s","🎣","Was ist „Clickbait“?",["Übertriebene Titel oder Bilder, die zum Klicken verleiten","Ein Angel-Video","Ein Computervirus","Ein Werbeverbot"],"Typisch sind Titel wie „Du wirst NICHT glauben, was dann passiert!“."],
+  ["influ","s","🤖","Was ist ein „Deepfake“?",["Ein mit KI gefälschtes Video oder Bild","Eine besonders tiefe Stimme","Ein Unterwasser-Video","Ein Tanz-Trend"],"Deshalb lohnt es sich, überraschende Videos von Promis erst mal zu prüfen."],
+  ["influ","s","🔞","Ab welchem Alter darf man laut den TikTok-Regeln ein eigenes Konto haben?",["Ab 13","Ab 10","Ab 16","Ab 18"],"Bis 16 sind die Konten automatisch privat und haben weniger Funktionen."],
+];
+
+const TOPICS = {
+  welt:   { emo: "🌍", name: "Allgemeinwissen" },
+  disney: { emo: "🏰", name: "Disney & Pixar" },
+  hp:     { emo: "⚡", name: "Harry Potter" },
+  influ:  { emo: "📱", name: "Influencer" },
+  mix:    { emo: "🎲", name: "Bunter Mix" },
+};
+const LEVELS = {
+  l: { name: "Zauberlehrling", emo: "🌟", desc: "Leichtere Fragen, 3 Antworten, wird vorgelesen – für ca. 8 bis 11 Jahre" },
+  s: { name: "Meistermagier",  emo: "🔮", desc: "Schwere Fragen, 4 Antworten – ab ca. 12 Jahren" },
+};
+const ROUND = 5;
+
+const QUESTIONS = Q.map(([t, l, e, q, a, f]) => ({ id: hash(t + l + e + q), t, l, e, q, a, f }));
+function hash(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+
+/* ================================================================
+   AVATAR & GARDEROBE
+   ================================================================ */
+const SKIN = { s1: "#FFE3CC", s2: "#F6C9A2", s3: "#DDA574", s4: "#AF7446", s5: "#744A2B" };
+const HAIRC = { braun: "#6b3e1f", blond: "#e9c15b", schwarz: "#2a1d18", rot: "#c2461a", rosa: "#f28ab8", blau: "#5b8def" };
+
+// cat -> items. price 0 = gratis
+const SHOP = {
+  robe: { name: "Umhang", emo: "🧥", items: [
+    { id: "lila", name: "Lila", price: 0, color: "#7b4fd6" },
+    { id: "nacht", name: "Nachtblau", price: 0, color: "#2b3a8c" },
+    { id: "rot", name: "Feuerrot", price: 4, color: "#c8323c" },
+    { id: "gruen", name: "Waldgrün", price: 4, color: "#2f8f5b" },
+    { id: "rosa", name: "Rosa", price: 6, color: "#e76fb0" },
+    { id: "tuerkis", name: "Türkis", price: 6, color: "#1fa5a8" },
+    { id: "sterne", name: "Sternen|himmel", price: 18, color: "#1b2566" },
+    { id: "gold", name: "Gold-Glitzer", price: 25, color: "#e0a82e" },
+  ]},
+  hat: { name: "Hut", emo: "🎩", items: [
+    { id: "keiner", name: "Kein Hut", price: 0 },
+    { id: "spitz", name: "Zauberhut", price: 0 },
+    { id: "sterne", name: "Sternenhut", price: 8 },
+    { id: "schleife", name: "Hut mit Schleife", price: 10 },
+    { id: "blumen", name: "Blumen|kranz", price: 10 },
+    { id: "sprechend", name: "Sprechender Hut", price: 20 },
+    { id: "krone", name: "Krone", price: 30 },
+  ]},
+  wand: { name: "Zauberstab", emo: "🪄", items: [
+    { id: "holz", name: "Holzstab", price: 0 },
+    { id: "stern", name: "Sternstab", price: 5 },
+    { id: "herz", name: "Herzstab", price: 7 },
+    { id: "eis", name: "Eisstab", price: 12 },
+    { id: "regenbogen", name: "Regenbogen|stab", price: 16 },
+    { id: "elder", name: "Elderstab", price: 28 },
+  ]},
+  pet: { name: "Tier", emo: "🦉", items: [
+    { id: "keins", name: "Kein Tier", price: 0, e: "" },
+    { id: "kroete", name: "Kröte", price: 4, e: "🐸" },
+    { id: "katze", name: "Katze", price: 8, e: "🐈‍⬛" },
+    { id: "hase", name: "Hase", price: 8, e: "🐇" },
+    { id: "eule", name: "Eule", price: 12, e: "🦉" },
+    { id: "schnee", name: "Schneemann", price: 15, e: "⛄" },
+    { id: "einhorn", name: "Einhorn", price: 22, e: "🦄" },
+    { id: "drache", name: "Drache", price: 35, e: "🐉" },
+  ]},
+  glasses: { name: "Brille", emo: "👓", items: [
+    { id: "keine", name: "Keine Brille", price: 0 },
+    { id: "rund", name: "Runde Brille", price: 4 },
+    { id: "herz", name: "Herz-Brille", price: 8 },
+    { id: "stern", name: "Stern-Brille", price: 10 },
+  ]},
+  scarf: { name: "Schal", emo: "🧣", items: [
+    { id: "keiner", name: "Kein Schal", price: 0 },
+    { id: "gryffindor", name: "Rot-Gold", price: 6, c: ["#8e1b1b", "#e8b830"] },
+    { id: "slytherin", name: "Grün-Silber", price: 6, c: ["#1c5b36", "#c9ced4"] },
+    { id: "ravenclaw", name: "Blau-Bronze", price: 6, c: ["#1d3a8a", "#b0763d"] },
+    { id: "hufflepuff", name: "Gelb-Schwarz", price: 6, c: ["#ecb939", "#2a2a2a"] },
+  ]},
+};
+const LOOK = {
+  skin: { name: "Haut", opts: Object.keys(SKIN) },
+  hairColor: { name: "Haarfarbe", opts: Object.keys(HAIRC) },
+  hairStyle: { name: "Frisur", opts: ["lang", "kurz", "zoepfe", "dutt"] },
+};
+const HAIRSTYLE_NAMES = { lang: "Lang", kurz: "Kurz", zoepfe: "Zöpfe", dutt: "Dutt" };
+const DEFAULT_AVATAR = { skin: "s1", hairColor: "braun", hairStyle: "lang", robe: "lila", hat: "spitz", wand: "holz", pet: "keins", glasses: "keine", scarf: "keiner" };
+
+let uidN = 0;
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const f = v => Math.max(0, Math.min(255, Math.round(amt < 0 ? v * (1 + amt) : v + (255 - v) * amt)));
+  return "#" + [f(r), f(g), f(b)].map(v => v.toString(16).padStart(2, "0")).join("");
+}
+function starPts(cx, cy, r1, r2, n = 5, rot = -90) {
+  const p = [];
+  for (let i = 0; i < n * 2; i++) {
+    const r = i % 2 ? r2 : r1, a = (rot + i * 180 / n) * Math.PI / 180;
+    p.push((cx + r * Math.cos(a)).toFixed(1) + "," + (cy + r * Math.sin(a)).toFixed(1));
+  }
+  return p.join(" ");
+}
+function heartPath(cx, cy, s) {
+  return `M${cx},${cy + s * .9} C${cx - s * 1.7},${cy - s * .2} ${cx - s * .7},${cy - s * 1.4} ${cx},${cy - s * .45} C${cx + s * .7},${cy - s * 1.4} ${cx + s * 1.7},${cy - s * .2} ${cx},${cy + s * .9}Z`;
+}
+function item(cat, id) { return SHOP[cat].items.find(i => i.id === id) || SHOP[cat].items[0]; }
+
+function avatarSVG(a, cls = "av") {
+  a = Object.assign({}, DEFAULT_AVATAR, a);
+  const u = "g" + (++uidN);
+  const skin = SKIN[a.skin] || SKIN.s1;
+  const hair = HAIRC[a.hairColor] || HAIRC.braun;
+  const hairDark = shade(hair, -.25);
+  const rb = item("robe", a.robe);
+  const robe = rb.id === "gold" ? `url(#${u}gold)` : rb.color;
+  const robeDark = shade(rb.color, -.3);
+  const defs = `<defs>
+    <linearGradient id="${u}gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe082"/><stop offset=".5" stop-color="#e0a82e"/><stop offset="1" stop-color="#b9791a"/></linearGradient>
+    <linearGradient id="${u}rb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5d5d"/><stop offset=".25" stop-color="#ffb13b"/><stop offset=".5" stop-color="#ffe14d"/><stop offset=".75" stop-color="#4ccf6b"/><stop offset="1" stop-color="#4d8cf5"/></linearGradient>
+  </defs>`;
+  let s = "";
+
+  // Haare hinten
+  if (a.hairStyle === "lang") s += `<path d="M64,96 Q60,56 100,54 Q140,56 136,96 L144,166 Q122,176 100,172 Q78,176 56,166 Z" fill="${hair}"/>`;
+  if (a.hairStyle === "zoepfe") {
+    for (const x of [58, 142]) {
+      s += `<g fill="${hair}">${[112, 128, 144, 160].map(y => `<ellipse cx="${x}" cy="${y}" rx="9" ry="10"/>`).join("")}</g>`;
+      s += `<circle cx="${x}" cy="173" r="5" fill="#ff6fa8"/>`;
+    }
+  }
+  if (a.hairStyle === "dutt") s += `<circle cx="100" cy="52" r="19" fill="${hair}"/>`;
+
+  // Umhang
+  s += `<path d="M60,140 Q100,118 140,140 L170,238 L30,238 Z" fill="${robe}"/>`;
+  s += `<path d="M34,226 L166,226 L170,238 L30,238 Z" fill="${robeDark}" opacity=".55"/>`;
+  s += `<path d="M100,132 L100,238" stroke="${robeDark}" stroke-width="3" opacity=".6"/>`;
+  if (rb.id === "sterne") {
+    s += [[70, 170, 5], [120, 160, 4], [90, 205, 6], [140, 205, 4], [60, 215, 3], [112, 190, 3]].map(([x, y, r]) =>
+      `<polygon points="${starPts(x, y, r, r * .45)}" fill="#ffe27a"/>`).join("");
+  }
+  if (rb.id === "gold") s += `<g fill="#fff" opacity=".8"><circle cx="72" cy="180" r="2"/><circle cx="128" cy="170" r="2.5"/><circle cx="92" cy="214" r="2"/><circle cx="140" cy="222" r="1.5"/></g>`;
+
+  // linker Arm
+  s += `<path d="M68,146 Q46,178 54,204" stroke="${robe}" stroke-width="20" stroke-linecap="round" fill="none"/>`;
+  s += `<circle cx="55" cy="208" r="8.5" fill="${skin}"/>`;
+
+  // Hals
+  s += `<rect x="91" y="116" width="18" height="16" rx="6" fill="${shade(skin, -.08)}"/>`;
+
+  // Schal
+  const sc = item("scarf", a.scarf);
+  if (sc.c) {
+    s += `<path d="M74,128 Q100,142 126,128 L128,141 Q100,156 72,141 Z" fill="${sc.c[0]}"/>`;
+    s += `<path d="M76,134 Q100,147 124,134" stroke="${sc.c[1]}" stroke-width="4" fill="none"/>`;
+    s += `<rect x="106" y="138" width="14" height="36" rx="3" fill="${sc.c[0]}" transform="rotate(-8 113 138)"/>`;
+    s += `<g transform="rotate(-8 113 138)" fill="${sc.c[1]}"><rect x="106" y="148" width="14" height="4"/><rect x="106" y="158" width="14" height="4"/><rect x="106" y="168" width="14" height="4"/></g>`;
+  }
+
+  // Kopf
+  s += `<circle cx="66" cy="99" r="6.5" fill="${shade(skin, -.06)}"/><circle cx="134" cy="99" r="6.5" fill="${shade(skin, -.06)}"/>`;
+  s += `<circle cx="100" cy="94" r="34" fill="${skin}"/>`;
+  // Gesicht
+  s += `<ellipse cx="87" cy="98" rx="4" ry="5" fill="#2b2140"/><ellipse cx="113" cy="98" rx="4" ry="5" fill="#2b2140"/>`;
+  s += `<circle cx="88.5" cy="96" r="1.5" fill="#fff"/><circle cx="114.5" cy="96" r="1.5" fill="#fff"/>`;
+  s += `<circle cx="78" cy="109" r="6" fill="#ff8fa3" opacity=".45"/><circle cx="122" cy="109" r="6" fill="#ff8fa3" opacity=".45"/>`;
+  s += `<path d="M90,110 Q100,120 110,110" stroke="#7a2d3a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+
+  // Pony / Haare vorne
+  if (a.hairStyle === "kurz") s += `<path d="M65,94 Q64,56 100,55 Q136,56 135,94 Q128,80 116,76 Q104,84 88,76 Q74,80 65,94 Z" fill="${hair}"/>`;
+  else s += `<path d="M65,96 Q62,56 100,55 Q138,56 135,96 Q130,78 118,72 Q100,84 80,74 Q70,80 65,96 Z" fill="${hair}"/>`;
+  s += `<path d="M80,64 Q92,60 104,62" stroke="${hairDark}" stroke-width="2" fill="none" opacity=".5"/>`;
+
+  // Brille
+  const gl = a.glasses;
+  if (gl === "rund") s += `<g stroke="#3a2a1a" stroke-width="2.6" fill="#ffffff22"><circle cx="87" cy="98" r="10"/><circle cx="113" cy="98" r="10"/></g><path d="M97,97 L103,97" stroke="#3a2a1a" stroke-width="2.6"/>`;
+  if (gl === "herz") s += `<g fill="#ff5c9a55" stroke="#e0317a" stroke-width="2.4"><path d="${heartPath(87, 98, 9)}"/><path d="${heartPath(113, 98, 9)}"/></g><path d="M97,96 L103,96" stroke="#e0317a" stroke-width="2.4"/>`;
+  if (gl === "stern") s += `<g fill="#ffe27a66" stroke="#d99a00" stroke-width="2.2"><polygon points="${starPts(87, 99, 13, 6.5)}"/><polygon points="${starPts(113, 99, 13, 6.5)}"/></g>`;
+
+  // Hut
+  const hc = rb.id === "gold" ? "#b9791a" : rb.color, hcd = shade(hc, -.3);
+  switch (a.hat) {
+    case "spitz":
+      s += `<path d="M62,68 Q90,44 104,2 Q114,40 138,68 Z" fill="${hc}"/><path d="M104,2 Q114,40 138,68 L122,68 Q108,40 104,2Z" fill="${hcd}" opacity=".5"/>`;
+      s += `<ellipse cx="100" cy="68" rx="50" ry="10" fill="${hcd}"/><path d="M68,62 Q100,72 132,62 L134,56 Q100,66 66,56 Z" fill="#f5c542"/>`;
+      break;
+    case "sterne":
+      s += `<path d="M62,68 Q90,44 104,2 Q114,40 138,68 Z" fill="#1b2566"/><ellipse cx="100" cy="68" rx="50" ry="10" fill="#131b4d"/>`;
+      s += [[92, 44, 6], [112, 30, 5], [104, 56, 4], [80, 58, 4], [106, 12, 3]].map(([x, y, r]) => `<polygon points="${starPts(x, y, r, r * .45)}" fill="#ffe27a"/>`).join("");
+      s += `<circle cx="104" cy="3" r="5" fill="#ffe27a"/>`;
+      break;
+    case "schleife":
+      s += `<path d="M62,68 Q90,44 98,4 Q112,38 138,68 Z" fill="#2c2340"/><ellipse cx="100" cy="68" rx="52" ry="10" fill="#1e1830"/>`;
+      s += `<path d="M68,60 Q100,70 132,60 L134,52 Q100,62 66,52 Z" fill="#ff6fa8"/>`;
+      s += `<path d="M112,58 L96,46 L96,68 Z M112,58 L128,46 L128,68 Z" fill="#ff6fa8"/><circle cx="112" cy="58" r="5" fill="#e0317a"/>`;
+      break;
+    case "blumen":
+      s += [[66, 72, "#ff6fa8"], [76, 62, "#ffd54a"], [89, 57, "#8fd3ff"], [102, 55, "#ff6fa8"], [115, 57, "#b690ff"], [127, 62, "#ffd54a"], [135, 72, "#8fd3ff"]]
+        .map(([x, y, c]) => `<g><circle cx="${x}" cy="${y}" r="7" fill="${c}"/><circle cx="${x}" cy="${y}" r="2.8" fill="#fff6c2"/></g>`).join("");
+      s += `<g fill="#4caf6a"><ellipse cx="71" cy="67" rx="5" ry="2.5" transform="rotate(-40 71 67)"/><ellipse cx="96" cy="55" rx="5" ry="2.5"/><ellipse cx="121" cy="59" rx="5" ry="2.5" transform="rotate(30 121 59)"/></g>`;
+      break;
+    case "sprechend":
+      s += `<path d="M60,70 Q84,50 96,26 Q98,16 110,8 Q106,22 116,30 Q126,48 140,70 Z" fill="#8a6440"/>`;
+      s += `<path d="M84,52 Q100,46 118,50" stroke="#5e4128" stroke-width="3" fill="none"/><path d="M92,40 Q100,36 110,40" stroke="#5e4128" stroke-width="2.5" fill="none"/>`;
+      s += `<ellipse cx="100" cy="70" rx="52" ry="10" fill="#6e4f31"/><path d="M110,8 Q118,4 122,12" stroke="#8a6440" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+      break;
+    case "krone":
+      s += `<path d="M70,70 L66,38 L82,52 L92,30 L100,48 L108,30 L118,52 L134,38 L130,70 Z" fill="url(#${u}gold)" stroke="#b9791a" stroke-width="2"/>`;
+      s += `<circle cx="100" cy="60" r="4.5" fill="#e0317a"/><circle cx="82" cy="62" r="3.5" fill="#3b8ef0"/><circle cx="118" cy="62" r="3.5" fill="#22b07d"/>`;
+      s += `<circle cx="66" cy="38" r="3" fill="#fff3b0"/><circle cx="92" cy="30" r="3" fill="#fff3b0"/><circle cx="108" cy="30" r="3" fill="#fff3b0"/><circle cx="134" cy="38" r="3" fill="#fff3b0"/>`;
+      break;
+  }
+
+  // rechter Arm mit Zauberstab
+  s += `<path d="M132,146 Q156,160 160,184" stroke="${robe}" stroke-width="20" stroke-linecap="round" fill="none"/>`;
+  const w = a.wand;
+  const wandCol = { holz: "#7a4a22", stern: "#f28ab8", herz: "#c9437a", eis: "#9fd8f2", regenbogen: `url(#${u}rb)`, elder: "#9d8b77" }[w] || "#7a4a22";
+  if (w === "elder") s += `<path d="M156,196 L166,172 L162,164 L172,146 L170,138 L178,122" stroke="${wandCol}" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="166" cy="172" r="3.5" fill="${wandCol}"/><circle cx="170" cy="140" r="3" fill="${wandCol}"/>`;
+  else s += `<path d="M156,196 L178,122" stroke="${wandCol}" stroke-width="${w === "regenbogen" ? 6 : 5}" stroke-linecap="round"/>`;
+  if (w === "stern") s += `<polygon points="${starPts(179, 118, 13, 6)}" fill="#ffd54a" stroke="#e0a82e" stroke-width="1.5"/>`;
+  else if (w === "herz") s += `<path d="${heartPath(179, 118, 10)}" fill="#ff5c9a"/>`;
+  else if (w === "eis") s += `<g stroke="#e8f7ff" stroke-width="3" stroke-linecap="round"><path d="M179,106 L179,130"/><path d="M168,112 L190,124"/><path d="M168,124 L190,112"/></g>`;
+  else s += `<circle cx="178" cy="120" r="5" fill="#fff6b0"/><g stroke="#ffe27a" stroke-width="2.5" stroke-linecap="round"><path d="M178,106 L178,110"/><path d="M190,120 L186,120"/><path d="M187,110 L184,113"/><path d="M169,111 L172,114"/></g>`;
+  s += `<circle cx="159" cy="190" r="8.5" fill="${skin}"/>`;
+
+  // Haustier
+  const pet = item("pet", a.pet);
+  if (pet.e) s += `<text x="34" y="236" font-size="42" text-anchor="middle">${pet.e}</text>`;
+
+  return `<svg class="${cls}" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs}${s}</svg>`;
+}
+
+/* ================================================================
+   SPEICHER
+   ================================================================ */
+const KEY = "zauberquiz.v1";
+function newPlayer(name, level, extra = {}) {
+  return Object.assign({
+    id: "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name, level, stars: 0, played: 0, correct: 0,
+    autoRead: level === "l",
+    avatar: Object.assign({}, DEFAULT_AVATAR),
+    owned: [], seen: {},
+  }, extra);
+}
+function defaultState() {
+  return {
+    sound: true,
+    players: [],
+  };
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
+if (!S || !Array.isArray(S.players)) S = defaultState();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+const P = id => S.players.find(p => p.id === id);
+function owns(p, cat, id) { const it = item(cat, id); return it.price === 0 || p.owned.includes(cat + ":" + id); }
+
+/* ================================================================
+   HELFER: Ton, Vorlesen, Glitzer
+   ================================================================ */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const $ = sel => document.querySelector(sel);
+const app = $("#app");
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+let actx;
+function tone(notes) {
+  if (!S.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+    let t = actx.currentTime;
+    for (const [f, d, type] of notes) {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type || "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + d + .05);
+      t += d * .7;
+    }
+  } catch (e) {}
+}
+const sfx = {
+  tap: () => tone([[660, .08, "triangle"]]),
+  good: () => tone([[784, .14], [988, .14], [1319, .3]]),
+  bad: () => tone([[330, .18, "triangle"], [262, .3, "triangle"]]),
+  win: () => tone([[523, .12], [659, .12], [784, .12], [1047, .4]]),
+  buy: () => tone([[880, .1], [1175, .1], [1568, .3]]),
+};
+function buzz(ms) { try { if (S.sound && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
+
+const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+let deVoice = null;
+function pickVoice() {
+  if (!canSpeak) return;
+  const vs = speechSynthesis.getVoices();
+  deVoice = vs.find(v => /^de[-_]DE/i.test(v.lang) && /google|anna|petra|helena|katja/i.test(v.name)) || vs.find(v => /^de/i.test(v.lang)) || null;
+}
+if (canSpeak) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+const stripEmoji = t => t.replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}‍️]/gu, "").replace(/\s+/g, " ").trim();
+function speak(text, slow, onEnd) {
+  if (!canSpeak) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(stripEmoji(text));
+    u.lang = "de-DE"; if (deVoice) u.voice = deVoice;
+    u.rate = slow ? .88 : 1; u.pitch = 1.05;
+    u.onend = u.onerror = () => onEnd && onEnd();
+    speechSynthesis.speak(u);
+  } catch (e) { onEnd && onEnd(); }
+}
+function stopSpeak() { if (canSpeak) try { speechSynthesis.cancel(); } catch (e) {} }
+
+function sparkle(x, y, n = 14, set = ["✨", "⭐", "🌟", "💫"]) {
+  let layer = $(".spark-layer");
+  if (!layer) { layer = document.createElement("div"); layer.className = "spark-layer"; document.body.appendChild(layer); }
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement("i");
+    el.textContent = set[i % set.length];
+    const ang = Math.random() * Math.PI * 2, dist = 70 + Math.random() * 110;
+    el.style.left = x + "px"; el.style.top = y + "px";
+    el.style.setProperty("--dx", Math.cos(ang) * dist + "px");
+    el.style.setProperty("--dy", Math.sin(ang) * dist - 40 + "px");
+    layer.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+}
+
+function toast(msg) {
+  document.querySelectorAll(".toast").forEach(t => t.remove());
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2400);
+}
+function confirmBox(title, text, yes, no, onYes) {
+  const bg = document.createElement("div"); bg.className = "modal-bg";
+  bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>${title}</h3>${text ? `<p>${text}</p>` : ""}
+    <div class="row"><button class="bigbtn ghost" data-no>${no}</button><button class="bigbtn" data-yes>${yes}</button></div></div>`;
+  bg.addEventListener("click", e => {
+    if (e.target === bg || e.target.closest("[data-no]")) bg.remove();
+    else if (e.target.closest("[data-yes]")) { bg.remove(); onYes(); }
+  });
+  document.body.appendChild(bg);
+}
+
+function render(html, after) {
+  stopSpeak();
+  app.innerHTML = html;
+  window.scrollTo(0, 0);
+  after && after();
+}
+// Ein Klick-Handler für alles mit data-go
+app.addEventListener("click", e => {
+  const b = e.target.closest("[data-go]");
+  if (!b) return;
+  const [fn, ...args] = b.dataset.go.split("|");
+  if (ACTIONS[fn]) { if (fn !== "answer") sfx.tap(); ACTIONS[fn](...args); }
+});
+
+/* ================================================================
+   BILDSCHIRME
+   ================================================================ */
+let session = null;
+let lastTopic = "mix";
+let familyPick = [];
+
+function home() {
+  const cards = S.players.map(p => `
+    <button class="pcard" data-go="me|${p.id}" aria-label="${esc(p.name)}">
+      ${avatarSVG(p.avatar)}
+      <div class="name">${esc(p.name)}</div>
+      <div class="meta"><span class="badge">${LEVELS[p.level].emo} ${LEVELS[p.level].name}</span><span class="badge gold">⭐ ${p.stars}</span></div>
+    </button>`).join("");
+  render(`
+    <div class="hero"><h1><span class="spark">✨</span> Zauber-Quiz <span class="spark">✨</span></h1><p>${S.players.length ? "Wer spielt heute?" : "Willkommen! Erschaffe zuerst deinen Zauberer."}</p></div>
+    <div class="players">${cards}
+      <button class="pcard add" data-go="edit|new"><div><div class="plus">＋</div><div class="name">Neuer Zauberer</div></div></button>
+    </div>
+    <div class="stack">
+      ${S.players.length >= 2 ? `<button class="bigbtn purple" data-go="familySetup">👨‍👩‍👧 Familien-Duell</button>` : ""}
+    </div>
+    <div class="footer">
+      <button class="iconbtn" data-go="toggleSound">${S.sound ? "🔔 Ton an" : "🔕 Ton aus"}</button>
+    </div>`);
+}
+
+function me(id) {
+  const p = P(id); if (!p) return home();
+  const topics = Object.entries(TOPICS).map(([k, t]) => `
+    <button class="topic" data-go="startSolo|${p.id}|${k}"><div class="emo">${t.emo}</div><div class="lbl">${t.name}</div></button>`).join("");
+  render(`
+    <div class="topbar"><button class="iconbtn" data-go="home" aria-label="Zurück">⬅️</button><div class="title"></div>
+      <button class="iconbtn" data-go="edit|${p.id}" aria-label="Einstellungen">⚙️</button></div>
+    <div class="me">
+      ${avatarSVG(p.avatar)}
+      <div class="name">${esc(p.name)}</div>
+      <div class="meta"><span class="badge">${LEVELS[p.level].emo} ${LEVELS[p.level].name}</span><span class="starpill">⭐ ${p.stars}</span></div>
+    </div>
+    <div class="section-title">Wähle ein Thema:</div>
+    <div class="topics">${topics}</div>
+    <div class="stack"><button class="bigbtn white" data-go="wardrobe|${p.id}|robe">🎩 Garderobe</button></div>`,
+    () => { if (p.autoRead) speak(`Hallo ${p.name}! Wähle ein Thema.`, p.level === "l"); });
+}
+
+/* ---------- Spieler anlegen / bearbeiten ---------- */
+let draft = null;
+function edit(id) {
+  const isNew = id === "new";
+  const p = isNew ? null : P(id);
+  draft = draft && draft.for === id ? draft : { for: id, name: p ? p.name : "", level: p ? p.level : "l", autoRead: p ? p.autoRead : true };
+  render(`
+    <div class="topbar"><button class="iconbtn" data-go="${isNew ? "home" : "me|" + id}" aria-label="Zurück">⬅️</button>
+      <div class="title">${isNew ? "Neuer Zauberer" : "Einstellungen"}</div></div>
+    <div class="panel">
+      <div class="field" style="margin-top:0"><label for="nm">Name</label>
+        <input type="text" id="nm" maxlength="16" autocomplete="off" value="${esc(draft.name)}" placeholder="Dein Name"></div>
+      <div class="field"><label>Schwierigkeit</label>
+        <div class="choice">${Object.entries(LEVELS).map(([k, l]) => `
+          <button class="opt ${draft.level === k ? "sel" : ""}" data-go="draftLevel|${k}"><span class="emo">${l.emo}</span><span><b>${l.name}</b><small>${l.desc}</small></span></button>`).join("")}
+        </div></div>
+      ${canSpeak ? `<div class="field"><button class="toggle" data-go="draftRead"><span>🔊 Fragen automatisch vorlesen</span><span class="sw ${draft.autoRead ? "on" : ""}"></span></button></div>` : ""}
+      <div class="stack"><button class="bigbtn purple" data-go="saveEdit">${isNew ? "✨ Zauberer erschaffen" : "💾 Speichern"}</button></div>
+      ${!isNew && S.players.length > 1 ? `<button class="danger" data-go="delPlayer|${id}">🗑️ ${esc(p.name)} löschen</button>` : ""}
+    </div>`);
+  $("#nm").addEventListener("input", e => { draft.name = e.target.value; });
+}
+
+/* ---------- Garderobe ---------- */
+function wardrobe(id, cat) {
+  const p = P(id); if (!p) return home();
+  cat = cat || "robe";
+  const tabs = [...Object.entries(SHOP).map(([k, c]) => [k, c.emo + " " + c.name]), ["look", "🙂 Aussehen"]]
+    .map(([k, n]) => `<button class="tab ${k === cat ? "sel" : ""}" data-go="wardrobe|${id}|${k}">${n}</button>`).join("");
+  let items = "";
+  if (cat === "look") {
+    for (const [lk, L] of Object.entries(LOOK)) {
+      items += `<div class="section-title" style="grid-column:1/-1;margin:8px 0 0">${L.name}</div>`;
+      items += L.opts.map(o => {
+        const worn = p.avatar[lk] === o;
+        const vis = lk === "hairStyle" ? avatarSVG(Object.assign({}, p.avatar, { hairStyle: o, hat: "keiner" }))
+          : `<div class="swatch"><i style="background:${lk === "skin" ? SKIN[o] : HAIRC[o]}"></i></div>`;
+        const label = lk === "hairStyle" ? HAIRSTYLE_NAMES[o] : lk === "hairColor" ? o[0].toUpperCase() + o.slice(1) : "";
+        return `<button class="item ${worn ? "worn" : ""}" data-go="look|${id}|${lk}|${o}">${vis}${label ? `<div class="nm">${label}</div>` : ""}
+          <div class="pr ${worn ? "on" : "own"}">${worn ? "✓ an" : "gratis"}</div></button>`;
+      }).join("");
+    }
+  } else {
+    items = SHOP[cat].items.map(it => {
+      const has = owns(p, cat, it.id), worn = p.avatar[cat] === it.id;
+      const preview = Object.assign({}, p.avatar, { [cat]: it.id });
+      let vis;
+      if (cat === "robe") vis = `<div class="swatch"><i style="background:${it.id === "gold" ? "linear-gradient(135deg,#ffe082,#e0a82e,#b9791a)" : it.id === "sterne" ? "radial-gradient(circle at 35% 35%,#ffe27a 0 6%,transparent 7%),radial-gradient(circle at 65% 60%,#ffe27a 0 5%,transparent 6%)," + it.color : it.color}"></i></div>`;
+      else vis = avatarSVG(preview);
+      return `<button class="item ${worn ? "worn" : ""} ${has ? "" : "locked"}" data-go="pick|${id}|${cat}|${it.id}" id="it-${cat}-${it.id}">
+        ${vis}<div class="nm">${esc(it.name).replace("|", "\u00AD")}</div>
+        <div class="pr ${worn ? "on" : has ? "own" : ""}">${worn ? "✓ an" : has ? "anziehen" : "⭐ " + it.price}</div></button>`;
+    }).join("");
+  }
+  const y = window.scrollY;
+  render(`
+    <div class="wtop">
+      <div class="topbar" style="margin-bottom:6px"><button class="iconbtn" data-go="me|${id}" aria-label="Zurück">⬅️</button><div class="title">Garderobe</div></div>
+      <div class="wprev">${avatarSVG(p.avatar)}<div class="info"><div class="name">${esc(p.name)}</div><span class="starpill">⭐ ${p.stars}</span></div></div>
+      <div class="tabs">${tabs}</div>
+    </div>
+    <div class="items">${items}</div>`);
+  if (ACTIONS._keepScroll) { window.scrollTo(0, y); ACTIONS._keepScroll = false; }
+  const selTab = $(".tab.sel"); if (selTab) selTab.scrollIntoView({ inline: "center", block: "nearest" });
+}
+
+/* ---------- Familien-Duell ---------- */
+function familySetup() {
+  if (!familyPick.length) familyPick = S.players.slice(0, 4).map(p => p.id);
+  familyPick = familyPick.filter(id => P(id));
+  const list = S.players.map(p => {
+    const sel = familyPick.includes(p.id);
+    return `<button class="pick ${sel ? "sel" : ""}" data-go="famToggle|${p.id}">${avatarSVG(p.avatar, "")}
+      <span class="nm">${esc(p.name)}<br><small class="muted" style="font-size:15px;font-weight:500">${LEVELS[p.level].emo} ${LEVELS[p.level].name}</small></span><span class="ck">${sel ? "✓" : ""}</span></button>`;
+  }).join("");
+  const topics = Object.entries(TOPICS).map(([k, t]) => `
+    <button class="topic ${lastTopic === k ? "sel" : ""}" data-go="famTopic|${k}"><div class="emo">${t.emo}</div><div class="lbl">${t.name}</div></button>`).join("");
+  const ok = familyPick.length >= 2 && familyPick.length <= 4;
+  render(`
+    <div class="topbar"><button class="iconbtn" data-go="home" aria-label="Zurück">⬅️</button><div class="title">Familien-Duell</div></div>
+    <p style="font-size:18px;margin:0 0 12px;color:#e6dcff">Wer spielt mit? (2 bis 4) Jeder bekommt Fragen in seiner eigenen Schwierigkeit – das Handy wird reihum weitergegeben.</p>
+    <div class="pickrow">${list}</div>
+    <div class="section-title">Thema:</div>
+    <div class="topics">${topics}</div>
+    <div class="stack"><button class="bigbtn" data-go="startFamily" ${ok ? "" : "disabled"}>🏁 Los geht's!</button></div>`);
+}
+
+/* ---------- Quiz ---------- */
+function pickQuestions(p, topic, n, exclude) {
+  const pool = QUESTIONS.filter(q => q.l === p.level && (topic === "mix" || q.t === topic) && !exclude.has(q.id));
+  const ranked = shuffle(pool).sort((a, b) => (p.seen[a.id] || 0) - (p.seen[b.id] || 0));
+  const out = ranked.slice(0, n);
+  out.forEach(q => exclude.add(q.id));
+  return out;
+}
+function startSession(ids, topic, mode) {
+  lastTopic = topic;
+  const used = new Set();
+  const per = {};
+  ids.forEach(id => { per[id] = pickQuestions(P(id), topic, ROUND, used); });
+  const queue = [];
+  for (let r = 0; r < ROUND; r++) ids.forEach(id => { if (per[id][r]) queue.push({ pid: id, q: per[id][r] }); });
+  session = { mode, topic, ids, queue, i: 0, res: {}, answered: false };
+  ids.forEach(id => session.res[id] = []);
+  nextStep();
+}
+function nextStep() {
+  const s = session;
+  if (s.i >= s.queue.length) return result();
+  const cur = s.queue[s.i];
+  if (s.mode === "family" && (s.i === 0 || s.queue[s.i - 1].pid !== cur.pid)) return handoff(cur.pid);
+  question();
+}
+function handoff(pid) {
+  const p = P(pid);
+  const strip = session.ids.map(id => `<span>${esc(P(id).name)}: ${session.res[id].filter(Boolean).length} ✓</span>`).join("");
+  render(`
+    <div class="topbar"><button class="iconbtn" data-go="quit" aria-label="Beenden">✖️</button></div>
+    <div class="handoff">
+      <div class="phone">📱</div>
+      <h2>${esc(p.name)} ist dran!</h2>
+      <p>Gib das Handy an ${esc(p.name)} weiter.</p>
+      ${avatarSVG(p.avatar)}
+      <div class="stack"><button class="bigbtn" data-go="question">Ich bin bereit! ✨</button></div>
+      <div class="score-strip">${strip}</div>
+    </div>`, () => { if (p.autoRead) speak(`${p.name} ist dran!`, p.level === "l"); });
+}
+function question() {
+  const s = session, cur = s.queue[s.i], p = P(cur.pid), q = cur.q;
+  s.answered = false;
+  s.order = shuffle(q.a.map((t, k) => ({ t, ok: k === 0 })));
+  const mine = s.queue.filter(x => x.pid === cur.pid);
+  const nr = mine.indexOf(cur);
+  const dots = mine.map((x, k) => {
+    const r = s.res[cur.pid][k];
+    return `<span class="dot ${k === nr ? "now" : r === true ? "ok" : r === false ? "no" : ""}"></span>`;
+  }).join("");
+  const keys = ["A", "B", "C", "D"];
+  render(`
+    <div class="lv-${p.level === "l" ? "leicht" : "schwer"}">
+      <div class="qhead"><button class="iconbtn" data-go="quit" aria-label="Beenden">✖️</button><div class="dots">${dots}</div><span style="width:48px"></span></div>
+      ${s.mode === "family" ? `<div class="turnchip">${avatarSVG(p.avatar, "")}${esc(p.name)}</div>` : ""}
+      <div class="qcard">
+        <div class="qnum">${TOPICS[q.t].emo} ${nr + 1} / ${mine.length}</div>
+        ${canSpeak ? `<button class="speak" data-go="readQ" aria-label="Vorlesen">🔊</button>` : ""}
+        <div class="qemoji">${q.e}</div>
+        <div class="qtext">${esc(q.q)}</div>
+      </div>
+      <div class="answers">${s.order.map((o, k) => `<button class="ans" data-go="answer|${k}"><span class="k">${keys[k]}</span><span>${esc(o.t)}</span></button>`).join("")}</div>
+      <div id="fb"></div>
+    </div>`, () => { if (p.autoRead) setTimeout(readQ, 250); });
+}
+function readQ() {
+  const s = session, cur = s.queue[s.i], p = P(cur.pid);
+  const btn = $(".speak");
+  const keys = ["A", "B", "C", "D"];
+  const txt = cur.q.q + " ... " + s.order.map((o, k) => keys[k] + ": " + o.t).join(". ... ");
+  btn && btn.classList.add("on");
+  speak(txt, p.level === "l", () => { const b = $(".speak"); b && b.classList.remove("on"); });
+}
+const PRAISE = ["Richtig!", "Zauberhaft!", "Super gemacht!", "Volltreffer!", "Genau!", "Klasse!"];
+const COMFORT = ["Knapp daneben!", "Nicht schlimm!", "Fast!", "Beim nächsten Mal!"];
+function answer(k) {
+  const s = session; if (s.answered) return;
+  s.answered = true;
+  stopSpeak();
+  const cur = s.queue[s.i], p = P(cur.pid), q = cur.q;
+  const ok = s.order[k].ok;
+  const btns = [...document.querySelectorAll(".ans")];
+  $(".answers").classList.add("locked");
+  btns.forEach((b, j) => {
+    if (s.order[j].ok) b.classList.add("right");
+    else if (j === +k) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+  s.res[cur.pid].push(ok);
+  p.seen[q.id] = (p.seen[q.id] || 0) + 1;
+  p.played++; if (ok) { p.correct++; p.stars += 1; }
+  save();
+  const right = s.order.find(o => o.ok).t;
+  const head = ok ? PRAISE[Math.floor(Math.random() * PRAISE.length)] : COMFORT[Math.floor(Math.random() * COMFORT.length)];
+  const last = s.i === s.queue.length - 1;
+  const nextLbl = last ? "Zum Ergebnis 🏆" : s.mode === "family" && s.queue[s.i + 1].pid !== cur.pid ? "Weitergeben ➜" : "Weiter ➜";
+  $("#fb").innerHTML = `<div class="feedback ${ok ? "good" : "bad"}">
+    <div class="row"><h3>${ok ? "✨ " + head + " +1 ⭐" : "🙈 " + head}</h3>${canSpeak ? `<button class="mini-speak" data-go="readFb" aria-label="Vorlesen">🔊</button>` : ""}</div>
+    ${ok ? "" : `<p>Richtig ist: <b>${esc(right)}</b></p>`}
+    ${q.f ? `<p>💡 ${esc(q.f)}</p>` : ""}
+    <button class="bigbtn purple" data-go="next">${nextLbl}</button></div>`;
+  s.fbText = (ok ? head : head + " Richtig ist: " + right + ".") + " " + (q.f || "");
+  if (ok) { sfx.good(); buzz(30); const r = btns[k].getBoundingClientRect(); sparkle(r.left + r.width / 2, r.top + r.height / 2); }
+  else { sfx.bad(); buzz([40, 60, 40]); }
+  setTimeout(() => $("#fb") && $("#fb").scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+  if (p.autoRead) setTimeout(() => speak(s.fbText, p.level === "l"), 500);
+}
+function result() {
+  const s = session;
+  const bonus = {};
+  s.ids.forEach(id => {
+    const r = s.res[id], c = r.filter(Boolean).length;
+    bonus[id] = r.length && c === r.length ? 3 : 0;
+    if (bonus[id]) P(id).stars += bonus[id];
+  });
+  save();
+  sfx.win();
+  setTimeout(() => sparkle(innerWidth / 2, innerHeight / 3, 22), 150);
+  if (s.mode === "solo") {
+    const p = P(s.ids[0]), r = s.res[p.id], c = r.filter(Boolean).length;
+    const earned = c + bonus[p.id];
+    const nStars = c === r.length ? 3 : c >= Math.ceil(r.length * .6) ? 2 : c >= 1 ? 1 : 0;
+    const msg = c === r.length ? "Alles richtig – du bist ein echtes Zaubergenie!" : c >= 3 ? "Richtig stark gezaubert!" : c >= 1 ? "Gut gemacht – übung macht den Meister!" : "Das war knifflig! Probier's gleich nochmal.";
+    const afford = cheapestAffordable(p);
+    render(`
+      <div class="result">
+        ${avatarSVG(p.avatar)}
+        <h2>${c} von ${r.length} richtig!</h2>
+        <div class="bigstars">${[0, 1, 2].map(k => `<span class="${k < nStars ? "" : "off"}">⭐</span>`).join("")}</div>
+        <p class="big">${msg.replace("übung", "Übung")}</p>
+        <span class="starpill earned">+${earned} ⭐${bonus[p.id] ? " (inkl. 3 Bonus!)" : ""}</span>
+        ${afford ? `<div class="hint">🎁 Du hast genug Sterne für: <b>${esc(afford.name)}</b>! Schau in die Garderobe.</div>` : ""}
+        <div class="stack">
+          <button class="bigbtn" data-go="startSolo|${p.id}|${s.topic}">🔁 Nochmal spielen</button>
+          <button class="bigbtn white" data-go="wardrobe|${p.id}|robe">🎩 Garderobe</button>
+          <button class="bigbtn ghost" data-go="me|${p.id}">Anderes Thema</button>
+        </div>
+      </div>`, () => { if (p.autoRead) speak(`${c} von ${r.length} richtig! ${msg}`, p.level === "l"); });
+  } else {
+    const rows = s.ids.map(id => ({ p: P(id), c: s.res[id].filter(Boolean).length, n: s.res[id].length }))
+      .sort((a, b) => b.c - a.c);
+    let place = 0, prev = -1;
+    rows.forEach((r, k) => { if (r.c !== prev) { place = k + 1; prev = r.c; } r.place = place; });
+    const medal = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🎖️" };
+    // Podest-Reihenfolge: 2, 1, 3, 4
+    const order = rows.length >= 3 ? [rows[1], rows[0], ...rows.slice(2)] : rows;
+    const winners = rows.filter(r => r.place === 1).map(r => r.p.name);
+    const title = winners.length > 1 ? "Unentschieden! 🤝" : `${esc(winners[0])} gewinnt! 🏆`;
+    render(`
+      <div class="result">
+        <h2>${title}</h2>
+        <div class="podium">${order.map(r => `
+          <div class="pod p${r.place}">${avatarSVG(r.p.avatar)}
+            <div class="blk"><div class="pl">${medal[r.place]}</div><div class="nm">${esc(r.p.name)}</div><div class="sc">${r.c} / ${r.n} ✓</div></div></div>`).join("")}
+        </div>
+        <div class="hint">Jeder hat ⭐ für seine richtigen Antworten bekommen – ab in die Garderobe!</div>
+        <div class="stack">
+          <button class="bigbtn" data-go="startFamily">🔁 Revanche!</button>
+          <button class="bigbtn ghost" data-go="home">Zum Start</button>
+        </div>
+      </div>`, () => speak(winners.length > 1 ? "Unentschieden!" : `${winners[0]} gewinnt!`, true));
+  }
+}
+function cheapestAffordable(p) {
+  let best = null;
+  for (const [cat, c] of Object.entries(SHOP)) for (const it of c.items)
+    if (it.price > 0 && !owns(p, cat, it.id) && it.price <= p.stars && (!best || it.price > best.price)) best = it;
+  return best;
+}
+
+/* ================================================================
+   AKTIONEN
+   ================================================================ */
+const ACTIONS = {
+  home, me, edit, wardrobe, familySetup, question, readQ, answer,
+  next() { session.i++; nextStep(); },
+  readFb() { const p = P(session.queue[session.i].pid); speak(session.fbText, p.level === "l"); },
+  quit() {
+    confirmBox("Quiz beenden?", "Die Sterne, die du schon gesammelt hast, behältst du.", "Beenden", "Weiterspielen", () => {
+      const s = session; session = null;
+      s && s.mode === "solo" ? me(s.ids[0]) : home();
+    });
+  },
+  startSolo(id, topic) { startSession([id], topic, "solo"); },
+  startFamily() { if (familyPick.length >= 2) startSession(familyPick.slice(), lastTopic, "family"); },
+  famToggle(id) {
+    if (familyPick.includes(id)) familyPick = familyPick.filter(x => x !== id);
+    else if (familyPick.length < 4) familyPick.push(id);
+    else toast("Höchstens 4 Spieler");
+    familySetup();
+  },
+  famTopic(k) { lastTopic = k; familySetup(); },
+  toggleSound() { S.sound = !S.sound; save(); home(); },
+  draftLevel(k) { draft.level = k; edit(draft.for); },
+  draftRead() { draft.autoRead = !draft.autoRead; edit(draft.for); },
+  saveEdit() {
+    const name = (draft.name || "").trim();
+    if (!name) { toast("Bitte gib einen Namen ein ✏️"); $("#nm").focus(); return; }
+    let id = draft.for;
+    if (id === "new") { const p = newPlayer(name, draft.level); p.autoRead = draft.autoRead; S.players.push(p); id = p.id; }
+    else { const p = P(id); p.name = name; p.level = draft.level; p.autoRead = draft.autoRead; }
+    draft = null; save(); me(id);
+  },
+  delPlayer(id) {
+    const p = P(id);
+    confirmBox(`${esc(p.name)} wirklich löschen?`, "Alle Sterne und Sachen aus der Garderobe gehen verloren.", "Löschen", "Abbrechen", () => {
+      S.players = S.players.filter(x => x.id !== id); familyPick = familyPick.filter(x => x !== id); draft = null; save(); home();
+    });
+  },
+  look(id, key, val) { const p = P(id); p.avatar[key] = val; save(); ACTIONS._keepScroll = true; wardrobe(id, "look"); },
+  pick(id, cat, itemId) {
+    const p = P(id), it = item(cat, itemId);
+    if (owns(p, cat, itemId)) { p.avatar[cat] = itemId; save(); ACTIONS._keepScroll = true; return wardrobe(id, cat); }
+    if (p.stars < it.price) {
+      const el = document.getElementById(`it-${cat}-${itemId}`);
+      if (el) { el.classList.remove("cant"); void el.offsetWidth; el.classList.add("cant"); }
+      sfx.bad();
+      return toast(`Dir fehlen noch ${it.price - p.stars} ⭐ – spiel ein Quiz!`);
+    }
+    confirmBox(`${esc(it.name.replace("|", ""))} holen?`, `Das kostet ${it.price} ⭐. Du hast ${p.stars} ⭐.`, "Ja, holen!", "Nein", () => {
+      p.stars -= it.price; p.owned.push(cat + ":" + itemId); p.avatar[cat] = itemId; save();
+      sfx.buy(); sparkle(innerWidth / 2, 120, 18);
+      ACTIONS._keepScroll = true; wardrobe(id, cat);
+      toast(`✨ ${it.name.replace("|", "")} gehört jetzt dir!`);
+    });
+  },
+};
+
+home();
+
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>

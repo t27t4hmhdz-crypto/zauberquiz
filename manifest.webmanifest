@@ -1,0 +1,17 @@
+{
+  "name": "Zauber-Quiz",
+  "short_name": "Zauber-Quiz",
+  "description": "Das Familien-Quiz mit Zauberer-Avatar, Vorlesefunktion und Familien-Duell.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1d1245",
+  "theme_color": "#1d1245",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
