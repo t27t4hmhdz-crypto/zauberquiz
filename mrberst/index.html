@@ -247,6 +247,31 @@ input { font-family: inherit; }
 .modal .btn { font-size: 18px; min-height: 54px; }
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); transform: translateX(-50%); z-index: 40; background: #fff; color: var(--ink); padding: 12px 18px; border-radius: 999px; font-size: 17px; box-shadow: 0 6px 20px #0006; max-width: calc(100% - 32px); text-align: center; animation: pop .25s; }
 
+
+/* Elternmodus */
+.pm-head { display: flex; align-items: center; gap: 10px; }
+.pm-head .ttl { flex: 1; font-family: var(--show); font-weight: 400; font-size: 24px; line-height: 1.1; }
+.pm-head .ttl small { display: block; font-family: var(--font); font-size: 14px; color: #dfe1ff; font-weight: 800; }
+.pm-filter { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0 4px; scrollbar-width: none; }
+.pm-filter::-webkit-scrollbar { display: none; }
+.pm-filter button { flex: none; padding: 10px 14px; border-radius: 999px; font-size: 16px; background: #ffffff22; color: #fff; border: 3px solid transparent; }
+.pm-filter button.on { background: var(--yellow); color: var(--ink); border-color: var(--ink); }
+.pm-card { background: #fff; color: var(--ink); border-radius: 24px; padding: 16px; margin-top: 12px; box-shadow: 0 6px 0 #0005; animation: pop .35s cubic-bezier(.2,1.4,.4,1); position: relative; }
+.pm-card .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pm-card .nr { color: var(--muted); font-size: 15px; }
+.pm-card .emo { font-size: 58px; text-align: center; line-height: 1.1; margin-top: 8px; }
+.pm-card .q { font-size: 23px; text-align: center; line-height: 1.3; margin-top: 6px; }
+.pm-card .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.pm-card .opts div { background: #eef0ff; border-radius: 14px; padding: 10px 6px; text-align: center; font-size: 17px; border: 4px solid transparent; }
+.pm-card .opts div.ok { border-color: var(--green); background: #e3fbec; }
+.pm-card .opts div b { display: block; font-size: 30px; }
+.pm-card .opts div small { display: block; color: var(--pink-d); font-size: 15px; margin-top: 4px; }
+.pm-sol { margin-top: 12px; border-radius: 18px; background: var(--ink); color: #fff; padding: 12px 14px; }
+.pm-sol .lbl { font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #b9bce8; }
+.pm-sol .val { font-family: var(--show); font-weight: 400; font-size: 32px; color: var(--yellow); line-height: 1.15; overflow-wrap: anywhere; }
+.pm-sol .val.hid { filter: blur(12px); }
+.pm-sol p { margin: 8px 0 0; font-size: 17px; line-height: 1.4; color: #e6e7ff; }
+.pm-sol .eye { float: right; background: #ffffff22; border-radius: 10px; padding: 6px 10px; font-size: 14px; color: #fff; }
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -628,6 +653,8 @@ function setup() {
       <div class="chips mt">${Object.entries(TOPICS).map(([k, n]) => `<button class="chip ${S.topics.includes(k) ? "on" : ""}" data-go="toggle|topics|${k}">${n}</button>`).join("")}</div>
     </div>
     <div class="mt"><button class="btn pink" data-go="start" style="min-height:70px;font-size:26px">🎬 Show starten</button></div>
+    <div class="mt"><button class="btn green" data-go="parent">🎙️ Elternmodus</button></div>
+    <p style="text-align:center;color:#dfe1ff;font-size:15px;margin:8px 0 0">Mama oder Papa sieht Frage und Lösung sofort und liest vor – z. B. im Auto.</p>
     <div class="mt"><button class="btn ghost" data-go="sound">${S.sound ? "🔔 Ton an" : "🔕 Ton aus"}</button></div>`);
   $("#show").addEventListener("input", e => { S.show = e.target.value.trim(); save(); });
   const nn = $("#newname"); if (nn) nn.addEventListener("keydown", e => { if (e.key === "Enter") A.addName(); });
@@ -817,6 +844,46 @@ async function reveal() {
     <div class="mt"><button class="btn pink" data-go="stage">💥 Nächste Frage</button></div>`;
 }
 
+/* ---------- Elternmodus (Quizmaster) ---------- */
+let PM = null; // { filter, deck, n, q, hide }
+function pmDeck() {
+  return shuffle(QUESTIONS.filter(q => PM.filter === "mix" || q.t === PM.filter));
+}
+function solutionText(q) {
+  if (q.type === "s") return `${fmt(q.a)} ${q.unit}`;
+  if (q.type === "m") return q.ok === 0 ? q.A[1] : q.B[1];
+  return q.ok ? "👍 Wahr" : "👎 Quatsch";
+}
+function parentView(anim) {
+  const q = PM.q;
+  const filters = [["mix", "🎲 Bunter Mix"], ...Object.entries(TOPICS)];
+  const opts = q.type === "m"
+    ? `<div class="opts">${[q.A, q.B].map((o, i) => `<div class="${i === q.ok && !PM.hide ? "ok" : ""}"><b>${o[0]}</b>${esc(o[1])}${PM.hide ? "" : `<small>${esc(o[2])}</small>`}</div>`).join("")}</div>`
+    : q.type === "w" ? `<div class="opts"><div class="${q.ok ? "ok" : ""}"><b>👍</b>Wahr</div><div class="${q.ok ? "" : "ok"}"><b>👎</b>Quatsch</div></div>` : "";
+  render(`
+    <div class="pm-head"><button class="iconbtn" data-go="setup" aria-label="Zurück">⬅️</button>
+      <div class="ttl">🎙️ Elternmodus<small>Frage vorlesen – Lösung steht unten</small></div>
+      ${canSpeak ? `<button class="iconbtn" data-go="pmRead" aria-label="Vorlesen">🔊</button>` : ""}</div>
+    <div class="pm-filter">${filters.map(([k, n]) => `<button class="${PM.filter === k ? "on" : ""}" data-go="pmFilter|${k}">${n}</button>`).join("")}</div>
+    <div class="pm-card" ${anim ? "" : 'style="animation:none"'}>
+      <div class="top"><span class="qtype ${q.type}" style="font-size:16px;padding:4px 12px">${TYPES[q.type]}</span><span class="nr">Frage ${PM.n}</span></div>
+      ${q.type !== "m" ? `<div class="emo">${q.e}</div>` : ""}
+      <div class="q">${esc(q.q)}</div>
+      ${q.type === "s" ? `<div class="unit" style="text-align:center;color:var(--muted);margin-top:6px">Antwort in: <b>${esc(q.unit)}</b></div>` : ""}
+      ${PM.hide && q.type === "w" ? "" : opts}
+      <div class="pm-sol"><button class="eye" data-go="pmHide">${PM.hide ? "👀 Zeigen" : "🙈 Verdecken"}</button>
+        <div class="lbl">Lösung</div><div class="val ${PM.hide ? "hid" : ""}">${esc(solutionText(q))}</div>
+        ${PM.hide ? "" : `<p>🤯 ${esc(q.f)}</p>`}</div>
+    </div>
+    <div class="mt"><button class="btn pink" data-go="pmNext" style="min-height:72px;font-size:24px">🎲 Nächste Frage</button></div>`);
+}
+function pmNext() {
+  if (!PM.deck.length) PM.deck = pmDeck();
+  PM.q = PM.deck.pop(); PM.n++;
+  sfx.boom(); buzz(60);
+  parentView(true);
+}
+
 /* ---------- Was ist mehr? / Wahr oder Quatsch ---------- */
 async function countdown() {
   const act = $("#act");
@@ -867,6 +934,11 @@ function end() {
    AKTIONEN
    ================================================================ */
 const A = {
+  parent() { PM = { filter: "mix", deck: [], n: 0, q: null, hide: false }; PM.deck = pmDeck(); pmNext(); },
+  pmNext,
+  pmFilter(k) { PM.filter = k; PM.deck = pmDeck(); pmNext(); },
+  pmHide() { PM.hide = !PM.hide; parentView(false); },
+  pmRead() { speak(readText(PM.q)); },
   setup, stage, handoff, entry, countdown, resolve, reveal,
   points(v) { S.points = v === "1"; save(); setup(); },
   mode(m) { S.mode = m; save(); setup(); },

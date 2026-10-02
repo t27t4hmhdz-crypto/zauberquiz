@@ -8,6 +8,8 @@ Der Name der Show („MR. …“) und die Fotos werden auf dem Handy eingegeben 
   - 🔢 **Schätzfragen:** Das Handy geht reihum, jeder tippt geheim seine Zahl ein. Der Nächste bekommt 1 Punkt, ein Volltreffer 2 Punkte.
   - ⚖️ **Was ist mehr?** und 🤥 **Wahr oder Quatsch?**: Countdown, alle zeigen gleichzeitig (Finger/Daumen),
     dann auflösen und antippen, wer richtig lag (1 Punkt).
+- **🎙️ Elternmodus (Quizmaster):** Mama oder Papa sieht Frage und Lösung sofort und liest vor. „🎲 Nächste Frage“ liefert eine zufällige Frage ohne Wiederholung,
+  „🎲 Bunter Mix“ mischt alle Themen und Fragearten, alternativ ein einzelnes Thema. Die Lösung lässt sich verdecken (🙈), falls Kinder mitschauen.
 - **Punkte sind optional:** „Ohne Punkte“ braucht keine Spielerliste – Schätzungen werden laut gesagt und direkt aufgelöst.
 - **Jeder gegen jeden oder Teams**, endlos spielen, „🏁“ beendet die Show mit Siegerehrung.
 - Punkte werden nicht gespeichert. Gemerkt werden nur Spielernamen, Showname, Auswahl und Fotos (alles nur auf dem Gerät).
