@@ -1,5 +1,5 @@
 // Offline-Speicher: Beim ersten Öffnen wird alles gespeichert, danach läuft das Quiz ohne Internet.
-const CACHE = "mrquiz-v3";
+const CACHE = "mrquiz-v4";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

@@ -649,6 +649,7 @@ function setup() {
     </div>` : ""}
     <div class="panel">
       <h2>🎯 Fragen</h2>
+      <button class="chip ${S.types.length === Object.keys(TYPES).length && S.topics.length === Object.keys(TOPICS).length ? "on" : ""}" data-go="mix" style="width:100%;font-size:18px;margin-bottom:10px">🎲 Bunter Mix – alles durcheinander</button>
       <div class="chips">${Object.entries(TYPES).map(([k, n]) => `<button class="chip ${S.types.includes(k) ? "on" : ""}" data-go="toggle|types|${k}">${n}</button>`).join("")}</div>
       <div class="chips mt">${Object.entries(TOPICS).map(([k, n]) => `<button class="chip ${S.topics.includes(k) ? "on" : ""}" data-go="toggle|topics|${k}">${n}</button>`).join("")}</div>
     </div>
@@ -957,6 +958,7 @@ const A = {
     save(); setup();
   },
   sound() { S.sound = !S.sound; save(); setup(); },
+  mix() { S.types = Object.keys(TYPES); S.topics = Object.keys(TOPICS); save(); setup(); toast("🎲 Bunter Mix: alle Themen und Fragearten"); },
   start() {
     const list = S.points ? (S.mode === "spieler" ? S.spieler : S.teams) : [];
     if (S.points && list.length < 2) return toast(S.mode === "spieler" ? "Mindestens 2 Spieler eintragen 🙂" : "Mindestens 2 Teams eintragen 🙂");
