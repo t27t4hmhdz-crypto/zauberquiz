@@ -433,7 +433,7 @@ const QUESTIONS = Q.map(r => {
    EINSTELLUNGEN (nur Namen und Auswahl werden gemerkt, keine Punkte)
    ================================================================ */
 const KEY = "mrquiz.v1";
-let S = { show: "", mode: "spieler", spieler: [], teams: ["Kinder", "Eltern"], topics: Object.keys(TOPICS), types: Object.keys(TYPES), sound: true };
+let S = { show: "", points: true, mode: "spieler", spieler: [], teams: ["Kinder", "Eltern"], topics: Object.keys(TOPICS), types: Object.keys(TYPES), sound: true };
 try { Object.assign(S, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 const showName = () => (S.show || "Quiz").toUpperCase();
@@ -612,11 +612,16 @@ function setup() {
       <div class="namefield"><span>MR.</span><input id="show" maxlength="14" placeholder="z. B. euer Familienname" value="${esc(S.show)}" autocomplete="off"></div>
     </div>
     <div class="panel">
+      <h2>🏆 Punkte zählen?</h2>
+      <div class="seg"><button class="${S.points ? "on" : ""}" data-go="points|1">Mit Punkten</button><button class="${S.points ? "" : "on"}" data-go="points|0">Ohne Punkte</button></div>
+      ${S.points ? "" : `<p class="hint" style="margin:10px 0 0">Einfach Fragen raten – ohne Spielerliste und ohne Handy-Weitergeben.</p>`}
+    </div>
+    ${S.points ? `<div class="panel">
       <h2>👨‍👩‍👧 Wer spielt?</h2>
       <div class="seg"><button class="${S.mode === "spieler" ? "on" : ""}" data-go="mode|spieler">Jeder gegen jeden</button><button class="${S.mode === "teams" ? "on" : ""}" data-go="mode|teams">Teams</button></div>
       <div class="plist">${list.map((n, i) => `<div class="pitem"><i class="dotc" style="background:${COLORS[i % COLORS.length]}"></i><span class="nm">${esc(n)}</span><button data-go="delName|${i}" aria-label="${esc(n)} entfernen">✕</button></div>`).join("")}</div>
       ${list.length < 8 ? `<div class="addrow"><input id="newname" maxlength="16" placeholder="${who} hinzufügen …" autocomplete="off"><button data-go="addName" aria-label="Hinzufügen">＋</button></div>` : ""}
-    </div>
+    </div>` : ""}
     <div class="panel">
       <h2>🎯 Fragen</h2>
       <div class="chips">${Object.entries(TYPES).map(([k, n]) => `<button class="chip ${S.types.includes(k) ? "on" : ""}" data-go="toggle|types|${k}">${n}</button>`).join("")}</div>
@@ -646,6 +651,7 @@ function nextPhoto() {
 }
 
 function scoreBar() {
+  if (!G.players.length) return "";
   const max = Math.max(...G.players.map(p => p.score));
   return `<div class="score">${G.players.map(p => `<div class="sc ${p.score === max && max > 0 ? "lead" : ""}"><i style="background:${p.color}"></i>${esc(p.name)} <b>${p.score}</b></div>`).join("")}</div>`;
 }
@@ -727,8 +733,10 @@ function question() {
   let body = "";
   if (q.type === "s") {
     body = `<div class="qcard">${canSpeak ? `<button class="speak" data-go="read" aria-label="Vorlesen">🔊</button>` : ""}<div class="emo">${q.e}</div><div class="q">${esc(q.q)}</div><div class="unit">Antwort in: <b>${esc(q.unit)}</b></div></div>
-      <div class="mt"><button class="btn green" data-go="handoff">📱 Alle schätzen!</button></div>
-      <p style="text-align:center;color:#dfe1ff;font-size:16px;margin-top:10px">Das Handy geht reihum – jeder tippt geheim seine Zahl ein.</p>`;
+      ${G.players.length ? `<div class="mt"><button class="btn green" data-go="handoff">📱 Alle schätzen!</button></div>
+      <p style="text-align:center;color:#dfe1ff;font-size:16px;margin-top:10px">Das Handy geht reihum – jeder tippt geheim seine Zahl ein.</p>`
+      : `<div class="mt"><button class="btn green" data-go="reveal">🥁 Auflösen</button></div>
+      <p style="text-align:center;color:#dfe1ff;font-size:16px;margin-top:10px">Jeder sagt laut seine Schätzung – wer ist am nächsten dran?</p>`}`;
   } else if (q.type === "m") {
     body = `<div class="qcard" style="padding:14px">${canSpeak ? `<button class="speak" data-go="read" aria-label="Vorlesen">🔊</button>` : ""}<div class="q" style="margin:4px 40px">${esc(q.q)}</div></div>
       <div class="vs" id="vs">${[q.A, q.B].map((o, i) => `<div class="opt" id="o${i}"><div class="e">${o[0]}</div><div class="t">${esc(o[1])}</div><div class="v"></div></div>${i === 0 ? `<div class="mid">VS</div>` : ""}`).join("")}</div>
@@ -787,6 +795,11 @@ async function reveal() {
     requestAnimationFrame(step);
   });
   sfx.tusch(); confetti(120);
+  if (!G.guesses.length) {
+    $("#rest").innerHTML = `<div class="fact"><b>🤯 Wow-Fakt:</b><br>${esc(q.f)}</div>
+      <div class="mt"><button class="btn pink" data-go="stage">💥 Nächste Frage</button></div>`;
+    return;
+  }
   const ranked = G.guesses.map((g, i) => ({ i, g, d: Math.abs(g - target) })).sort((a, b) => a.d - b.d);
   const best = ranked[0].d;
   const medals = ["🥇", "🥈", "🥉"];
@@ -821,6 +834,11 @@ async function resolve() {
   if (q.type === "m") { $("#o0 .v").textContent = q.A[2]; $("#o1 .v").textContent = q.B[2]; }
   sfx.tusch(); confetti(80);
   const verdict = q.type === "w" ? (q.ok ? "✅ Das ist WAHR!" : "❌ Das ist QUATSCH!") : `✅ ${q.ok === 0 ? q.A[1] : q.B[1]}!`;
+  if (!G.players.length) {
+    act.innerHTML = `<div class="fact"><b>${esc(verdict)}</b><br>${esc(q.f)}</div>
+      <div class="mt"><button class="btn pink" data-go="stage">💥 Nächste Frage</button></div>`;
+    return;
+  }
   act.innerHTML = `
     <div class="fact"><b>${esc(verdict)}</b><br>${esc(q.f)}</div>
     <div class="sectitle">Wer lag richtig?</div>
@@ -849,7 +867,8 @@ function end() {
    AKTIONEN
    ================================================================ */
 const A = {
-  setup, stage, handoff, entry, countdown, resolve,
+  setup, stage, handoff, entry, countdown, resolve, reveal,
+  points(v) { S.points = v === "1"; save(); setup(); },
   mode(m) { S.mode = m; save(); setup(); },
   addName() {
     const inp = $("#newname"); const n = (inp && inp.value || "").trim();
@@ -867,8 +886,8 @@ const A = {
   },
   sound() { S.sound = !S.sound; save(); setup(); },
   start() {
-    const list = S.mode === "spieler" ? S.spieler : S.teams;
-    if (list.length < 2) return toast(S.mode === "spieler" ? "Mindestens 2 Spieler eintragen 🙂" : "Mindestens 2 Teams eintragen 🙂");
+    const list = S.points ? (S.mode === "spieler" ? S.spieler : S.teams) : [];
+    if (S.points && list.length < 2) return toast(S.mode === "spieler" ? "Mindestens 2 Spieler eintragen 🙂" : "Mindestens 2 Teams eintragen 🙂");
     const deck = buildDeck();
     if (!deck.length) return toast("Für diese Auswahl gibt es keine Fragen");
     G = { players: list.map((n, i) => ({ name: n, color: COLORS[i % COLORS.length], score: 0 })), deck, photo: null };
@@ -896,7 +915,10 @@ const A = {
     if (G.right.size) { sfx.good(); confetti(60); }
     stage();
   },
-  end() { confirmBox("Show beenden?", "Dann kommt die Siegerehrung.", "Siegerehrung 🏆", "Weiterspielen", end); },
+  end() {
+    if (!G.players.length) return confirmBox("Show beenden?", "", "Beenden", "Weiterspielen", () => { stopSpeak(); setup(); });
+    confirmBox("Show beenden?", "Dann kommt die Siegerehrung.", "Siegerehrung 🏆", "Weiterspielen", end);
+  },
 };
 
 loadPhotos().then(setup);
