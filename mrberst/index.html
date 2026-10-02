@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mr. Quiz Show</title>
+<meta name="description" content="Die Familien-Spielshow: Schätzfragen, Was ist mehr? und Wahr oder Quatsch – mit eurem Familienfoto.">
+<meta name="theme-color" content="#14185e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mr. Quiz">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+:root {
+  --bg1: #14185e;
+  --bg2: #2a2fb8;
+  --pink: #ff2e88;
+  --pink-d: #b5165c;
+  --yellow: #ffd400;
+  --yellow-d: #c79f00;
+  --cyan: #19d3ff;
+  --green: #22d66b;
+  --green-d: #13914a;
+  --red: #ff3b3b;
+  --red-d: #b31d1d;
+  --ink: #16163a;
+  --card: #ffffff;
+  --muted: #6a6a8a;
+  --show: "Lilita One", "Arial Black", Impact, system-ui, sans-serif;
+  --font: "Nunito", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: var(--font); font-weight: 800; color: #fff;
+  background: var(--bg1);
+  min-height: 100dvh; overscroll-behavior: none;
+  -webkit-user-select: none; user-select: none;
+}
+body::before {
+  content: ""; position: fixed; inset: -50%; z-index: 0; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, #ffffff0d 0deg 10deg, transparent 10deg 20deg),
+              radial-gradient(circle at 50% 40%, var(--bg2) 0%, var(--bg1) 55%);
+  animation: spin 80s linear infinite;
+}
+#app { position: relative; z-index: 1; max-width: 560px; margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 24px); }
+button { font-family: inherit; font-weight: 900; cursor: pointer; border: 0; color: inherit; }
+input { font-family: inherit; }
+
+/* Logo */
+.logo { text-align: center; margin: 6px 0 14px; transform: rotate(-3deg); }
+.logo .mr { font-family: var(--show); font-size: 30px; color: var(--yellow); letter-spacing: 2px;
+  -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); }
+.logo .nm { font-family: var(--show); font-size: clamp(44px, 15vw, 72px); line-height: .95; color: #fff;
+  -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 5px 5px 0 var(--pink), 9px 9px 0 var(--ink);
+  overflow-wrap: anywhere; }
+.logo .sub { display: inline-block; margin-top: 10px; background: var(--pink); padding: 4px 14px; border-radius: 8px;
+  font-size: 15px; letter-spacing: 2px; text-transform: uppercase; transform: rotate(2deg); box-shadow: 3px 3px 0 var(--ink); }
+.logo.small { margin: 0; transform: rotate(-2deg); }
+.logo.small .mr { font-size: 16px; -webkit-text-stroke: 1px var(--ink); text-shadow: 2px 2px 0 var(--ink); }
+.logo.small .nm { font-size: 30px; -webkit-text-stroke: 2px var(--ink); text-shadow: 3px 3px 0 var(--pink), 5px 5px 0 var(--ink); }
+
+/* Panels */
+.panel { background: var(--card); color: var(--ink); border-radius: 22px; padding: 16px; box-shadow: 0 6px 0 #0005; margin-top: 14px; }
+.panel h2 { font-family: var(--show); font-weight: 400; font-size: 24px; margin: 0 0 10px; letter-spacing: .5px; }
+.panel p.hint { margin: 0 0 10px; font-size: 15px; color: var(--muted); font-weight: 700; }
+
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 60px;
+  border-radius: 18px; font-size: 21px; padding: 10px 16px; background: var(--yellow); color: var(--ink);
+  box-shadow: 0 6px 0 var(--yellow-d); text-transform: uppercase; letter-spacing: .5px; }
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--yellow-d); }
+.btn.pink { background: var(--pink); color: #fff; box-shadow: 0 6px 0 var(--pink-d); }
+.btn.pink:active { box-shadow: 0 2px 0 var(--pink-d); }
+.btn.green { background: var(--green); color: var(--ink); box-shadow: 0 6px 0 var(--green-d); }
+.btn.green:active { box-shadow: 0 2px 0 var(--green-d); }
+.btn.ghost { background: #ffffff22; color: #fff; box-shadow: none; text-transform: none; font-size: 18px; min-height: 52px; }
+.btn.light { background: #eef0ff; color: var(--ink); box-shadow: none; text-transform: none; font-size: 18px; min-height: 52px; }
+.btn:disabled { opacity: .45; }
+.row { display: flex; gap: 10px; }
+.row > * { flex: 1; }
+.mt { margin-top: 14px; }
+
+.photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.ph { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #e7e9ff; }
+.ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph button { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; border-radius: 50%; background: #000a; color: #fff; font-size: 15px; line-height: 1; }
+.ph.add { display: grid; place-items: center; border: 3px dashed #b9bde8; background: #f5f6ff; font-size: 30px; color: var(--muted); cursor: pointer; }
+
+.namefield { display: flex; align-items: center; gap: 8px; background: #eef0ff; border-radius: 14px; padding: 4px 4px 4px 14px; }
+.namefield span { font-family: var(--show); font-size: 24px; color: var(--pink); }
+.namefield input, .addrow input {
+  flex: 1; min-width: 0; border: 0; background: #fff; border-radius: 10px; padding: 12px; font-size: 20px; font-weight: 800; color: var(--ink);
+  -webkit-user-select: text; user-select: text;
+}
+.namefield input:focus, .addrow input:focus { outline: 3px solid var(--cyan); }
+
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #eef0ff; padding: 5px; border-radius: 16px; }
+.seg button { min-height: 50px; border-radius: 12px; font-size: 18px; background: transparent; color: var(--ink); }
+.seg button.on { background: var(--ink); color: #fff; }
+
+.plist { display: grid; gap: 8px; margin-top: 12px; }
+.pitem { display: flex; align-items: center; gap: 10px; background: #f5f6ff; border-radius: 14px; padding: 8px 8px 8px 12px; font-size: 20px; }
+.pitem .dotc { width: 28px; height: 28px; border-radius: 50%; flex: none; border: 3px solid var(--ink); }
+.pitem .nm { flex: 1; overflow-wrap: anywhere; }
+.pitem button { width: 40px; height: 40px; border-radius: 12px; background: #ffe1ea; color: var(--pink-d); font-size: 18px; }
+.addrow { display: flex; gap: 8px; margin-top: 10px; }
+.addrow input { background: #eef0ff; }
+.addrow button { width: 56px; border-radius: 12px; background: var(--ink); color: #fff; font-size: 26px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 10px 14px; border-radius: 999px; font-size: 16px; background: #eef0ff; color: var(--muted); border: 3px solid transparent; }
+.chip.on { background: #fff6c4; color: var(--ink); border-color: var(--ink); }
+
+/* Stage */
+.score { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: none; }
+.score::-webkit-scrollbar { display: none; }
+.sc { flex: none; display: flex; align-items: center; gap: 6px; background: #ffffff1f; border-radius: 999px; padding: 6px 12px 6px 6px; font-size: 16px; }
+.sc i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; }
+.sc b { font-family: var(--show); font-weight: 400; font-size: 20px; color: var(--yellow); }
+.sc.lead { background: #ffd40033; }
+.stagehead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.iconbtn { width: 46px; height: 46px; border-radius: 14px; background: #ffffff22; font-size: 20px; flex: none; display: grid; place-items: center; }
+
+.frame-wrap { position: relative; margin: 10px auto 0; width: 100%; max-width: 420px; }
+.frame { position: relative; width: 100%; aspect-ratio: 4/5; max-height: 54vh; margin: 0 auto; border-radius: 22px;
+  border: 6px solid #fff; box-shadow: 0 0 0 6px var(--pink), 0 10px 30px #0008; background: radial-gradient(circle, #3a3fd0, var(--bg1)); }
+.frame .tiles { position: absolute; inset: 0; border-radius: 16px; }
+.tile { position: absolute; background-repeat: no-repeat; will-change: transform, opacity;
+  transition: transform .9s cubic-bezier(.2,.7,.3,1), opacity .9s ease-in; }
+.frame.shake { animation: shake .45s; }
+.frame .flash { position: absolute; inset: -6px; border-radius: 22px; background: #fff; opacity: 0; pointer-events: none; }
+.frame .flash.go { animation: flash .5s ease-out; }
+.bulbs { position: absolute; inset: -18px; pointer-events: none; }
+.bulbs i { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 10px var(--yellow); animation: bulb 1s infinite; }
+
+.bigred { display: block; margin: 26px auto 0; width: 170px; height: 170px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff8a8a, var(--red) 45%, var(--red-d));
+  box-shadow: 0 12px 0 #7a0f0f, 0 18px 30px #0008; color: #fff; font-family: var(--show); font-weight: 400; font-size: 34px;
+  -webkit-text-stroke: 1.5px #7a0f0f; paint-order: stroke fill; line-height: 1; text-transform: uppercase; }
+.bigred:active { transform: translateY(9px); box-shadow: 0 3px 0 #7a0f0f, 0 8px 20px #0008; }
+.bigred small { display: block; font-size: 30px; margin-bottom: 4px; -webkit-text-stroke: 0; }
+.bigred:not(:disabled) { animation: throb 1.6s infinite ease-in-out; }
+
+/* Question */
+.qtype { display: inline-block; font-family: var(--show); font-weight: 400; font-size: 20px; padding: 6px 16px; border-radius: 10px;
+  transform: rotate(-2deg); box-shadow: 3px 3px 0 var(--ink); letter-spacing: .5px; }
+.qtype.s { background: var(--cyan); color: var(--ink); }
+.qtype.m { background: var(--yellow); color: var(--ink); }
+.qtype.w { background: var(--pink); color: #fff; }
+.qcard { position: relative; background: #fff; color: var(--ink); border-radius: 24px; padding: 18px; margin-top: 12px; box-shadow: 0 6px 0 #0005; text-align: center; animation: pop .35s cubic-bezier(.2,1.4,.4,1); }
+.qcard .emo { font-size: 70px; line-height: 1.1; }
+.qcard .q { font-size: 24px; line-height: 1.3; margin-top: 6px; }
+.qcard .unit { margin-top: 8px; color: var(--muted); font-size: 17px; }
+.speak { position: absolute; top: 10px; right: 10px; width: 48px; height: 48px; border-radius: 14px; background: #eef0ff; color: var(--ink); font-size: 22px; }
+
+.vs { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: stretch; margin-top: 14px; }
+.vs .opt { background: #fff; color: var(--ink); border-radius: 20px; padding: 14px 8px; text-align: center; box-shadow: 0 6px 0 #0005; border: 5px solid transparent; display: flex; flex-direction: column; justify-content: center; }
+.vs .opt .e { font-size: 52px; line-height: 1.1; }
+.vs .opt .t { font-size: 19px; margin-top: 6px; line-height: 1.2; }
+.vs .opt .v { margin-top: 8px; font-family: var(--show); font-weight: 400; font-size: 22px; color: var(--pink); min-height: 1.2em; }
+.vs .opt.win { border-color: var(--green); background: #e3fbec; animation: pop .4s; }
+.vs .opt.lose { opacity: .5; }
+.vs .mid { display: grid; place-items: center; font-family: var(--show); font-size: 28px; color: var(--yellow); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; }
+.tf { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.tf div { border-radius: 20px; padding: 14px 6px; text-align: center; font-family: var(--show); font-weight: 400; font-size: 26px; border: 5px solid transparent; }
+.tf .t { background: #d9fbe7; color: var(--green-d); }
+.tf .f { background: #ffe1ea; color: var(--pink-d); }
+.tf div.win { border-color: var(--ink); animation: pop .4s; }
+.tf div.lose { opacity: .4; }
+.tf div small { display: block; font-family: var(--font); font-size: 15px; font-weight: 800; margin-top: 2px; }
+
+.countdown { text-align: center; font-family: var(--show); font-weight: 400; font-size: 130px; line-height: 1; margin: 20px 0; color: var(--yellow);
+  -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 6px 6px 0 var(--pink); animation: pop .4s; }
+.countdown.go { font-size: 56px; }
+
+.fact { background: #fff6c4; color: var(--ink); border-radius: 18px; padding: 14px; margin-top: 14px; font-size: 18px; line-height: 1.4; animation: pop .35s; }
+.fact b { font-family: var(--show); font-weight: 400; font-size: 20px; }
+
+.answer { text-align: center; margin-top: 14px; animation: pop .4s; }
+.answer .lbl { font-size: 18px; color: #dfe1ff; }
+.answer .num { font-family: var(--show); font-weight: 400; font-size: clamp(48px, 16vw, 76px); line-height: 1.05; color: var(--yellow);
+  -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 5px 5px 0 var(--pink); overflow-wrap: anywhere; }
+.answer .u { font-size: 20px; font-family: var(--font); font-weight: 900; color: #fff; -webkit-text-stroke: 0; text-shadow: none; }
+.ranking { display: grid; gap: 8px; margin-top: 14px; }
+.rk { display: flex; align-items: center; gap: 10px; background: #fff; color: var(--ink); border-radius: 16px; padding: 10px 12px; font-size: 18px; animation: pop .35s both; }
+.rk .pos { font-size: 26px; width: 34px; text-align: center; }
+.rk .nm { flex: 1; overflow-wrap: anywhere; }
+.rk .g { font-family: var(--show); font-weight: 400; font-size: 20px; text-align: right; }
+.rk .d { font-size: 13px; color: var(--muted); display: block; font-family: var(--font); }
+.rk.win { background: #e3fbec; outline: 4px solid var(--green); }
+.rk .pts { background: var(--green); color: #fff; border-radius: 10px; padding: 2px 8px; font-size: 16px; margin-left: 6px; }
+
+.who { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.who button { display: flex; align-items: center; gap: 8px; padding: 12px; border-radius: 16px; background: #fff; color: var(--ink); font-size: 18px; text-align: left; border: 4px solid transparent; min-height: 58px; }
+.who button i { width: 22px; height: 22px; border-radius: 50%; flex: none; border: 2px solid var(--ink); }
+.who button span { flex: 1; overflow-wrap: anywhere; }
+.who button.on { border-color: var(--green); background: #e3fbec; }
+.who button.on::after { content: "✓"; color: var(--green-d); font-size: 22px; }
+.sectitle { font-family: var(--show); font-weight: 400; font-size: 24px; margin-top: 18px; text-align: center; }
+
+/* Handoff & keypad */
+.hand { text-align: center; padding-top: 30px; }
+.hand .ph-ico { font-size: 64px; animation: wiggle 1.2s infinite; }
+.hand h2 { font-family: var(--show); font-weight: 400; font-size: 40px; margin: 8px 0 0; overflow-wrap: anywhere; }
+.hand p { font-size: 19px; color: #dfe1ff; margin: 8px 0 22px; }
+.hand .tag { display: inline-block; width: 26px; height: 26px; border-radius: 50%; border: 3px solid #fff; vertical-align: middle; margin-right: 8px; }
+.entry { background: #fff; color: var(--ink); border-radius: 22px; padding: 14px; margin-top: 12px; box-shadow: 0 6px 0 #0005; }
+.entry .who-now { font-size: 17px; color: var(--muted); text-align: center; }
+.entry .qsmall { font-size: 18px; text-align: center; margin: 4px 0 10px; line-height: 1.3; }
+.display { background: var(--ink); color: var(--yellow); border-radius: 16px; padding: 10px 14px; text-align: right; font-family: var(--show); font-weight: 400; font-size: 42px; min-height: 70px; overflow-wrap: anywhere; line-height: 1.2; }
+.display small { font-family: var(--font); font-size: 16px; color: #c9cbf5; margin-left: 6px; }
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.keys button { min-height: 62px; border-radius: 14px; background: #eef0ff; color: var(--ink); font-size: 28px; font-family: var(--show); font-weight: 400; box-shadow: 0 4px 0 #c9cbe8; }
+.keys button:active { transform: translateY(3px); box-shadow: 0 1px 0 #c9cbe8; }
+.keys button.k0 { grid-column: span 1; }
+.keys button.del { background: #ffe1ea; color: var(--pink-d); box-shadow: 0 4px 0 #f3b3c7; font-size: 24px; }
+.keys button.zz { font-size: 22px; }
+.progress { display: flex; gap: 6px; justify-content: center; margin: 12px 0 0; flex-wrap: wrap; }
+.progress span { padding: 4px 10px; border-radius: 999px; background: #ffffff22; font-size: 14px; }
+.progress span.done { background: var(--green); color: var(--ink); }
+
+/* End */
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin-top: 20px; }
+.pod { flex: 1; max-width: 140px; text-align: center; }
+.pod .medal { font-size: 46px; animation: hop 1.2s infinite ease-in-out; }
+.pod .nm { font-size: 19px; margin: 4px 0; overflow-wrap: anywhere; }
+.pod .blk { border-radius: 14px 14px 0 0; display: grid; place-items: center; font-family: var(--show); font-weight: 400; font-size: 32px; color: var(--ink); border: 4px solid var(--ink); border-bottom: 0; }
+.pod.p1 .blk { height: 150px; background: var(--yellow); }
+.pod.p2 .blk { height: 110px; background: #dfe3ee; }
+.pod.p3 .blk { height: 80px; background: #f0a868; }
+.rest { margin-top: 14px; display: grid; gap: 6px; }
+
+/* Modal / toast */
+.modal-bg { position: fixed; inset: 0; background: #000a; z-index: 30; display: grid; place-items: center; padding: 16px; }
+.modal { background: #fff; color: var(--ink); border-radius: 24px; padding: 20px; width: 100%; max-width: 400px; text-align: center; animation: pop .25s; }
+.modal h3 { font-family: var(--show); font-weight: 400; font-size: 28px; margin: 0; }
+.modal p { font-size: 17px; color: var(--muted); margin: 8px 0 0; }
+.modal .row { margin-top: 16px; }
+.modal .btn { font-size: 18px; min-height: 54px; }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px); transform: translateX(-50%); z-index: 40; background: #fff; color: var(--ink); padding: 12px 18px; border-radius: 999px; font-size: 17px; box-shadow: 0 6px 20px #0006; max-width: calc(100% - 32px); text-align: center; animation: pop .25s; }
+
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes shake { 0%,100% { transform: translate(0,0) rotate(0); } 20% { transform: translate(-8px,4px) rotate(-2deg); } 40% { transform: translate(8px,-4px) rotate(2deg); } 60% { transform: translate(-6px,-2px) rotate(-1deg); } 80% { transform: translate(6px,2px) rotate(1deg); } }
+@keyframes flash { 0% { opacity: .9; } 100% { opacity: 0; } }
+@keyframes throb { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes bulb { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+@keyframes wiggle { 0%,100% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
+@keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) { body::before, .bigred, .bulbs i { animation: none !important; } }
+@media (max-width: 370px) {
+  .qcard .q { font-size: 21px; } .vs .opt .t { font-size: 17px; } .bigred { width: 150px; height: 150px; font-size: 30px; }
+  .photos { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<canvas id="confetti"></canvas>
+<noscript><p style="padding:20px;font-size:20px">Bitte JavaScript einschalten.</p></noscript>
+<script>
+"use strict";
+
+/* ================================================================
+   FRAGEN
+   Schätzfrage:      ["s", Thema, Emoji, Frage, Zahl, Einheit, Wow-Fakt]
+   Was ist mehr?:    ["m", Thema, Frage, [Emoji, Name, Wert], [Emoji, Name, Wert], richtige Seite (0 = links, 1 = rechts), Wow-Fakt]
+   Wahr oder Quatsch:["w", Thema, Emoji, Behauptung, true/false, Wow-Fakt]
+   Themen: tiere, koerper, welt, alltag
+   ================================================================ */
+const Q = [
+  // ---------- Schätzfragen · Tiere & Natur ----------
+  ["s","tiere","🐛","Der Tausendfüßer mit den meisten Beinen der Welt – wie viele Beine hat er?",1306,"Beine","Er wurde 2021 in Australien entdeckt. Die meisten Tausendfüßer haben aber weit unter 1000 Beine."],
+  ["s","tiere","🐕","Wie viele Zähne hat ein erwachsener Hund?",42,"Zähne","Ein Mensch hat nur 32 – ein Hund also 10 mehr."],
+  ["s","tiere","🐨","Wie viele Stunden schläft ein Koala ungefähr am Tag?",20,"Stunden","Eukalyptusblätter liefern kaum Energie – darum dösen Koalas fast den ganzen Tag."],
+  ["s","tiere","🐆","Wie schnell kann ein Gepard ungefähr rennen?",100,"km/h","Diese Geschwindigkeit hält er aber nur ein paar Sekunden durch."],
+  ["s","tiere","🐢","Die Riesenschildkröte Jonathan gilt als ältestes Landtier der Welt. Wie alt ist sie ungefähr (2026)?",194,"Jahre","Jonathan schlüpfte vermutlich um 1832 und lebt auf der Insel St. Helena."],
+  ["s","tiere","🐝","Wie viele Eier kann eine Bienenkönigin an einem einzigen Tag legen?",2000,"Eier","Das sind mehr Eier, als sie selbst wiegt!"],
+  ["s","tiere","🦒","Wie lang ist die Zunge einer Giraffe ungefähr?",50,"cm","Die Zunge ist dunkel gefärbt – vermutlich als Schutz vor Sonnenbrand."],
+  ["s","tiere","🐘","Wie schwer ist das Gehirn eines Elefanten ungefähr?",5,"kg","Ein Menschengehirn wiegt nur etwa 1,4 kg."],
+  ["s","tiere","🦘","Wie hoch kann ein Känguru springen?",3,"Meter","Weit springen kann es sogar bis zu 9 Meter."],
+  ["s","tiere","🐦","Wie viele Kilometer fliegt eine Küstenseeschwalbe ungefähr in einem Jahr?",70000,"km","Sie pendelt jedes Jahr zwischen Arktis und Antarktis – Weltrekord!"],
+  ["s","tiere","🐧","Wie viele Pinguin-Arten gibt es ungefähr?",18,"Arten","Der größte ist der Kaiserpinguin, der kleinste der Zwergpinguin."],
+  ["s","tiere","🥚","Wie viel wiegt ein Straußenei ungefähr?",1400,"Gramm","Das entspricht etwa 24 Hühnereiern."],
+  ["s","tiere","🦢","Wie viele Federn hat ein Schwan ungefähr?",25000,"Federn","Damit gehört er zu den Vögeln mit den meisten Federn."],
+  ["s","tiere","🌲","Wie hoch ist der höchste Baum der Welt, der Mammutbaum „Hyperion“?",116,"Meter","Das ist höher als der Big Ben in London."],
+  ["s","tiere","🐙","Wie viele Saugnäpfe hat ein Gemeiner Krake ungefähr insgesamt?",2000,"Saugnäpfe","Mit den Saugnäpfen kann er sogar schmecken."],
+
+  // ---------- Schätzfragen · Körper & Essen ----------
+  ["s","koerper","👶","Wie viele Knochen hat ein Baby bei der Geburt ungefähr?",300,"Knochen","Viele wachsen später zusammen – Erwachsene haben nur noch 206."],
+  ["s","koerper","💇","Wie viele Haare hat ein Mensch ungefähr auf dem Kopf?",100000,"Haare","Davon fallen jeden Tag etwa 50 bis 100 aus – ganz normal."],
+  ["s","koerper","🩸","Wie viele Liter Blut hat ein erwachsener Mensch ungefähr?",5,"Liter","Das Herz pumpt diese Menge etwa einmal pro Minute durch den Körper."],
+  ["s","koerper","❤️","Wie oft schlägt das Herz eines Menschen ungefähr an einem Tag?",100000,"Schläge","In einem ganzen Leben sind das fast 3 Milliarden Schläge."],
+  ["s","koerper","💪","Wie viele Muskeln hat der Mensch ungefähr?",650,"Muskeln","Der größte ist der Po-Muskel, der kleinste sitzt im Ohr."],
+  ["s","koerper","🌀","Wie lang ist der Dünndarm eines Erwachsenen ungefähr?",6,"Meter","Er liegt ganz zusammengefaltet im Bauch."],
+  ["s","koerper","💅","Wie viele Millimeter wächst ein Fingernagel ungefähr im Monat?",3,"mm","Fußnägel wachsen etwa halb so schnell."],
+  ["s","koerper","🌬️","Wie viele Liter Luft atmet ein Mensch ungefähr an einem Tag?",10000,"Liter","Das würde etwa 1000 große Luftballons füllen."],
+  ["s","koerper","🥒","Zu wie viel Prozent besteht eine Gurke aus Wasser?",96,"Prozent","Darum hat eine Gurke kaum Kalorien."],
+  ["s","koerper","🍫","Wie viele Kalorien hat eine Tafel Milchschokolade (100 g) ungefähr?",540,"kcal","Das ist ungefähr ein Viertel von dem, was ein Erwachsener am Tag braucht."],
+  ["s","koerper","🥔","Wie viele Kilo Kartoffeln isst ein Mensch in Deutschland ungefähr im Jahr?",60,"kg","Am beliebtesten sind sie als Pommes, Bratkartoffeln und Püree."],
+  ["s","koerper","🦷","Wie viele Zähne hat ein Erwachsener mit Weisheitszähnen?",32,"Zähne","Viele Menschen bekommen aber nicht alle Weisheitszähne."],
+  ["s","koerper","👁️","Wie oft blinzelt ein Mensch ungefähr pro Minute?",15,"Mal","Beim Lesen oder am Bildschirm blinzeln wir viel seltener."],
+  ["s","koerper","🥚","Wie viele Eier isst ein Mensch in Deutschland ungefähr im Jahr?",230,"Eier","Viele davon stecken versteckt in Nudeln, Kuchen und Keksen."],
+
+  // ---------- Schätzfragen · Welt & Rekorde ----------
+  ["s","welt","🗼","Wie hoch ist der Eiffelturm mit Antenne?",330,"Meter","Bei seiner Eröffnung 1889 war er das höchste Bauwerk der Welt."],
+  ["s","welt","🏙️","Wie hoch ist das höchste Gebäude der Welt, der Burj Khalifa in Dubai?",828,"Meter","Er hat über 160 Stockwerke."],
+  ["s","welt","🌍","Wie viele Länder sind Mitglied der Vereinten Nationen?",193,"Länder","Der neueste Mitgliedsstaat ist seit 2011 der Südsudan."],
+  ["s","welt","🇩🇪","Wie viele Millionen Menschen leben ungefähr in Deutschland?",84,"Millionen","Damit hat Deutschland die meisten Einwohner in der EU."],
+  ["s","welt","🌙","Wie weit ist der Mond ungefähr von der Erde entfernt?",384000,"km","Mit dem Auto bräuchte man bei 100 km/h etwa 160 Tage."],
+  ["s","welt","🪜","Wie viele Stufen hat der Eiffelturm bis ganz nach oben?",1665,"Stufen","Für Besucher sind die Treppen aber nur bis zur zweiten Etage offen."],
+  ["s","welt","🧱","Wie lang ist die Chinesische Mauer mit allen Abschnitten ungefähr?",21000,"km","Das ist mehr als die Hälfte des Erdumfangs."],
+  ["s","welt","🌊","Wie tief ist die tiefste Stelle im Meer, der Marianengraben, ungefähr?",11000,"Meter","Der Mount Everest würde komplett darin verschwinden."],
+  ["s","welt","☀️","Wie heiß ist die Oberfläche der Sonne ungefähr?",5500,"Grad","Im Inneren der Sonne sind es sogar etwa 15 Millionen Grad."],
+  ["s","welt","🏔️","Wie hoch ist die Zugspitze, Deutschlands höchster Berg?",2962,"Meter","Oben auf dem Gipfel steht ein goldenes Kreuz."],
+  ["s","welt","🏞️","Wie lang ist der Rhein ungefähr?",1230,"km","Er fließt von der Schweiz bis in die Nordsee in den Niederlanden."],
+  ["s","welt","🏝️","Aus wie vielen Inseln besteht Indonesien ungefähr?",17000,"Inseln","Auf nur etwa 6000 davon leben Menschen."],
+  ["s","welt","🌐","Wie viele Sprachen gibt es ungefähr auf der Welt?",7000,"Sprachen","Allein in Papua-Neuguinea werden über 800 Sprachen gesprochen."],
+  ["s","welt","⏱️","Wie viele Sekunden hat ein Tag?",86400,"Sekunden","Rechnung: 24 × 60 × 60."],
+  ["s","welt","🔴","Wie viele Erdtage braucht der Mars für eine Runde um die Sonne?",687,"Tage","Ein Mars-Jahr ist also fast doppelt so lang wie unseres."],
+  ["s","welt","🛣️","Wie viele Kilometer Autobahn gibt es ungefähr in Deutschland?",13000,"km","Die längste ist die A7 mit fast 1000 km."],
+  ["s","welt","🏟️","Wie viele Zuschauer passen ungefähr in das Dortmunder Stadion (Signal Iduna Park)?",81000,"Zuschauer","Es ist das größte Fußballstadion Deutschlands."],
+  ["s","welt","🌏","Wie alt ist die Erde ungefähr?",4500,"Millionen Jahre","Also etwa 4,5 Milliarden Jahre."],
+
+  // ---------- Schätzfragen · Alltag & Kurioses ----------
+  ["s","alltag","🎹","Wie viele Tasten hat ein normales Klavier?",88,"Tasten","52 weiße und 36 schwarze."],
+  ["s","alltag","♟️","Wie viele Felder hat ein Schachbrett?",64,"Felder","8 × 8 – abwechselnd hell und dunkel."],
+  ["s","alltag","🎲","Wie viele Augen hat ein Spielwürfel zusammengezählt?",21,"Augen","Gegenüberliegende Seiten ergeben immer 7."],
+  ["s","alltag","📅","Wie viele Minuten hat eine Woche?",10080,"Minuten","Rechnung: 7 × 24 × 60."],
+  ["s","alltag","🗽","Wie viele Zacken hat die Krone der Freiheitsstatue?",7,"Zacken","Sie stehen für die sieben Kontinente und sieben Meere."],
+  ["s","alltag","🇺🇸","Wie viele Streifen hat die Flagge der USA?",13,"Streifen","Sie stehen für die 13 Gründungsstaaten. Die 50 Sterne stehen für die heutigen Bundesstaaten."],
+  ["s","alltag","🇪🇺","Wie viele Sterne hat die Flagge der Europäischen Union?",12,"Sterne","Die Zahl hat nichts mit der Zahl der Länder zu tun – 12 steht für Vollkommenheit."],
+  ["s","alltag","⚽","Aus wie vielen Flicken besteht ein klassischer Fußball?",32,"Flicken","12 Fünfecke und 20 Sechsecke."],
+  ["s","alltag","🎂","Wie viele Kerzen braucht man für alle Geburtstagskuchen vom 1. bis zum 10. Geburtstag zusammen?",55,"Kerzen","1 + 2 + 3 + … + 10 = 55."],
+  ["s","alltag","🏃","Wie viele Meter ist ein Marathon lang?",42195,"Meter","Die krumme Zahl stammt von den Olympischen Spielen 1908 in London."],
+  ["s","alltag","🧊","Wie viele Ecken hat ein Würfel?",8,"Ecken","Dazu 12 Kanten und 6 Flächen."],
+  ["s","alltag","👟","Wie viele Spieler stehen bei einem Fußballspiel insgesamt auf dem Platz?",22,"Spieler","Elf pro Mannschaft – inklusive Torwart."],
+];
+Q.push(
+  // ---------- Was ist mehr? ----------
+  ["m","welt","Was ist höher?",["🗼","Eiffelturm","330 m"],["⛪","Kölner Dom","157 m"],0,"Der Eiffelturm ist mehr als doppelt so hoch wie der Kölner Dom."],
+  ["m","tiere","Wer ist schneller?",["🐆","Gepard beim Sprint","ca. 100 km/h"],["🦅","Wanderfalke im Sturzflug","über 300 km/h"],1,"Der Wanderfalke ist das schnellste Tier der Welt."],
+  ["m","tiere","Was hat mehr Beine?",["🕷️","3 Spinnen","24 Beine"],["🐜","5 Ameisen","30 Beine"],1,"Spinnen haben 8 Beine, Insekten wie Ameisen nur 6."],
+  ["m","welt","Wo leben mehr Menschen?",["🥨","Bayern","ca. 13 Millionen"],["🇦🇹","Österreich","ca. 9 Millionen"],0,"In Bayern leben mehr Menschen als im ganzen Land Österreich."],
+  ["m","welt","Welcher Fluss ist länger?",["🏞️","Rhein","ca. 1230 km"],["🌊","Donau","ca. 2850 km"],1,"Die Donau fließt durch 10 Länder – mehr als jeder andere Fluss."],
+  ["m","koerper","Wer hat mehr Knochen?",["👶","Ein Baby","ca. 300"],["🧑","Ein Erwachsener","206"],0,"Beim Wachsen verschmelzen viele Knochen miteinander."],
+  ["m","welt","Was ist breiter?",["🌕","Der Mond","3474 km"],["🦘","Australien (von West nach Ost)","ca. 4000 km"],1,"Australien ist breiter als der Mond!"],
+  ["m","welt","Was dauert auf der Venus länger?",["🌅","Ein Tag","243 Erdtage"],["🗓️","Ein Jahr","225 Erdtage"],0,"Die Venus dreht sich so langsam, dass ein Tag dort länger als ein Jahr ist."],
+  ["m","tiere","Wer hat mehr Zähne?",["😁","Ein Mensch","32"],["🐕","Ein Hund","42"],1,"Katzen haben übrigens nur 30."],
+  ["m","welt","Was ist heißer?",["⚡","Ein Blitz","ca. 30.000 Grad"],["☀️","Die Oberfläche der Sonne","ca. 5500 Grad"],0,"Ein Blitz ist etwa fünfmal heißer als die Sonnenoberfläche."],
+  ["m","welt","Was gab es zuerst?",["🔺","Die Pyramiden von Gizeh","vor ca. 4500 Jahren"],["🦣","Das Aussterben der letzten Mammuts","vor ca. 4000 Jahren"],0,"Als die Pyramiden gebaut wurden, lebten auf einer Insel im Nordpolarmeer noch Mammuts."],
+  ["m","tiere","Wovon gibt es mehr?",["⭐","Sterne in unserer Milchstraße","100–400 Milliarden"],["🌳","Bäume auf der Erde","ca. 3 Billionen"],1,"Auf jeden Menschen kommen etwa 400 Bäume."],
+  ["m","koerper","Was ist länger?",["🌀","Der ganze Darm eines Menschen","ca. 7 m"],["🦒","Eine ausgewachsene Giraffe","ca. 5 m"],0,"Der Darm ist so lang, weil er möglichst viel Nahrung aufnehmen soll."],
+  ["m","welt","Was ist höher?",["🏔️","Mount Everest","8849 m"],["🏙️","10 Burj Khalifas übereinander","8280 m"],0,"Knapp! Der Everest gewinnt mit rund 570 Metern Vorsprung."],
+  ["m","tiere","Wer schläft länger?",["🐨","Ein Koala","ca. 20 Stunden"],["🐈","Eine Katze","ca. 15 Stunden"],0,"Beide sind echte Schlafprofis."],
+  ["m","tiere","Was wiegt mehr?",["🧑‍🤝‍🧑","Alle Menschen der Welt","viel mehr"],["🐜","Alle Ameisen der Welt","ca. ein Fünftel davon"],0,"Lange hieß es, Ameisen wiegen mehr – eine Studie von 2022 hat das widerlegt."],
+  ["m","welt","Welcher Kontinent hat mehr Länder?",["🌍","Afrika","54"],["🇪🇺","Europa","ca. 45"],0,"Afrika hat mehr Länder als jeder andere Kontinent."],
+  ["m","welt","Was ist größer?",["🇷🇺","Die Fläche von Russland","17,1 Mio. km²"],["🪐","Die Oberfläche von Pluto","16,7 Mio. km²"],0,"Russland ist größer als die gesamte Oberfläche des Zwergplaneten Pluto."],
+  ["m","alltag","Was hat mehr Tasten?",["🎹","Ein Klavier","88"],["⌨️","Eine Computertastatur","ca. 105"],1,"Eine Tastatur mit Ziffernblock hat etwa 105 Tasten."],
+  ["m","tiere","Wer wird älter?",["🦈","Grönlandhai","bis zu 400 Jahre"],["🐢","Riesenschildkröte","bis zu 190 Jahre"],0,"Der Grönlandhai ist das langlebigste Wirbeltier der Welt."],
+  ["m","welt","Was ist größer?",["🏔️","Die Höhe des Mount Everest","8849 m"],["🌊","Die Tiefe des Marianengrabens","ca. 11.000 m"],1,"Der Graben ist über 2 km tiefer, als der Everest hoch ist."],
+  ["m","welt","Was ist länger?",["🧱","Die Chinesische Mauer","ca. 21.000 km"],["🌍","Einmal um die Erde (Äquator)","ca. 40.000 km"],1,"Die Mauer würde etwa halb um die Erde reichen."],
+  ["m","welt","Was ist schneller?",["🔊","Der Schall","ca. 1235 km/h"],["✈️","Ein Passagierflugzeug","ca. 900 km/h"],0,"Darum hört man ein Flugzeug manchmal erst, wenn es schon vorbei ist."],
+  ["m","welt","Was ist höher?",["🗽","Freiheitsstatue mit Sockel","93 m"],["⛪","Kölner Dom","157 m"],1,"Der Kölner Dom gehört zu den höchsten Kirchen der Welt."],
+  ["m","koerper","Was besteht zu mehr Prozent aus Wasser?",["🧍","Ein Mensch","ca. 60 %"],["🥒","Eine Gurke","ca. 96 %"],1,"Wir Menschen sind trotzdem zu mehr als der Hälfte Wasser."],
+  ["m","welt","Wo leben mehr Menschen?",["🇨🇦","Kanada","ca. 41 Millionen"],["🇵🇱","Polen","ca. 37 Millionen"],0,"Obwohl Kanada riesig ist, leben dort nur etwa halb so viele Menschen wie in Deutschland."],
+  ["m","tiere","Wer ist schwerer?",["🐘","Ein Afrikanischer Elefant","bis zu 6 Tonnen"],["🐋","Die Zunge eines Blauwals","ca. 2,7 Tonnen"],0,"Die Blauwal-Zunge wiegt aber so viel wie ein kleiner Elefant!"],
+  ["m","alltag","Was ist mehr?",["⏱️","Sekunden an einem Tag","86.400"],["📅","Minuten in zwei Monaten","ca. 87.800"],1,"Ganz knapp – 61 Tage haben 87.840 Minuten."],
+);
+Q.push(
+  // ---------- Wahr oder Quatsch? ----------
+  ["w","tiere","🐄","Kühe haben beste Freundinnen.",true,"Forscher fanden heraus: Mit ihrer Lieblingskuh sind Kühe deutlich entspannter."],
+  ["w","tiere","🐦","Ein Strauß steckt bei Gefahr den Kopf in den Sand.",false,"Das ist ein Märchen. Strauße drehen nur ihre Eier im Nest mit dem Schnabel um."],
+  ["w","tiere","🐠","Goldfische können sich nur drei Sekunden lang etwas merken.",false,"Goldfische erinnern sich monatelang und können sogar Tricks lernen."],
+  ["w","koerper","🍌","Bananen sind Beeren – Erdbeeren aber nicht.",true,"Botanisch ist die Banane eine Beere, die Erdbeere eine Sammelnussfrucht."],
+  ["w","welt","🗼","Der Eiffelturm ist im Sommer etwas höher als im Winter.",true,"Das Eisen dehnt sich bei Hitze aus – bis zu etwa 15 Zentimeter."],
+  ["w","koerper","🍯","Honig kann man auch nach tausenden Jahren noch essen.",true,"In ägyptischen Gräbern fand man jahrtausendealten Honig, der nicht verdorben war."],
+  ["w","welt","⚡","Ein Blitz schlägt nie zweimal an derselben Stelle ein.",false,"Hohe Gebäude werden sogar oft getroffen – das Empire State Building über 20-mal pro Jahr."],
+  ["w","welt","🧱","Die Chinesische Mauer kann man vom Mond aus mit bloßem Auge sehen.",false,"Dafür ist sie viel zu schmal. Selbst aus der Erdumlaufbahn ist das kaum möglich."],
+  ["w","tiere","🐙","Ein Oktopus hat drei Herzen.",true,"Und sein Blut ist blau!"],
+  ["w","tiere","🦥","Ein Faultier kann länger die Luft anhalten als ein Delfin.",true,"Faultiere schaffen bis zu 40 Minuten unter Wasser, Delfine meist etwa 10."],
+  ["w","tiere","🦒","Ein Mensch und eine Giraffe haben gleich viele Halswirbel.",true,"Beide haben sieben. Bei der Giraffe ist jeder nur viel länger."],
+  ["w","welt","👑","Napoleon war besonders klein.",false,"Mit etwa 1,69 m war er für seine Zeit ganz normal groß."],
+  ["w","tiere","🐨","Koalas haben Fingerabdrücke, die unseren sehr ähnlich sind.",true,"Selbst Fachleute können sie unter dem Mikroskop kaum unterscheiden."],
+  ["w","alltag","♟️","Es gibt mehr mögliche Schachpartien als Atome im sichtbaren Universum.",true,"Die Zahl möglicher Partien ist unvorstellbar groß – eine 1 mit über 100 Nullen."],
+  ["w","tiere","🦩","Flamingos sind schon bei der Geburt rosa.",false,"Küken sind grau-weiß. Rosa werden sie erst durch Farbstoffe in ihrem Futter."],
+  ["w","tiere","🐻‍❄️","Eisbären haben eine schwarze Haut.",true,"Und ihr Fell ist eigentlich durchsichtig, nicht weiß."],
+  ["w","koerper","🍅","Die Tomate ist botanisch gesehen eine Beere.",true,"Auch Gurken, Kürbisse und Paprika zählen zu den Beeren."],
+  ["w","koerper","🧠","Menschen nutzen nur 10 Prozent ihres Gehirns.",false,"Ein Mythos. Wir nutzen alle Bereiche – nur nicht alle gleichzeitig."],
+  ["w","tiere","🦈","Haie gibt es schon länger auf der Erde als Bäume.",true,"Haie gibt es seit etwa 450 Millionen Jahren, Bäume erst seit etwa 385 Millionen."],
+  ["w","welt","☁️","Eine einzige Schönwetterwolke kann mehrere hundert Tonnen wiegen.",true,"Das Wasser ist nur in winzig kleinen Tröpfchen fein verteilt."],
+  ["w","tiere","💩","Wombats machen würfelförmige Häufchen.",true,"So rollen sie nicht weg – Wombats markieren damit ihr Revier."],
+  ["w","tiere","🐘","Elefanten sind die einzigen Tiere, die nicht springen können.",false,"Elefanten können zwar nicht springen – Nilpferde, Nashörner und Faultiere aber auch nicht."],
+  ["w","alltag","🖼️","Die Mona Lisa hat keine sichtbaren Augenbrauen.",true,"Vielleicht sind sie beim Reinigen verblasst – Forscher sind sich nicht einig."],
+  ["w","welt","🪐","Ein Jahr auf dem Merkur dauert nur 88 Tage.",true,"Merkur ist der Sonne am nächsten und rast deshalb schnell um sie herum."],
+  ["w","tiere","🐶","Schokolade ist für Hunde giftig.",true,"Der Stoff Theobromin in Schokolade ist für Hunde gefährlich."],
+  ["w","tiere","🐧","Am Nordpol leben Pinguine.",false,"Pinguine leben nur auf der Südhalbkugel. Am Nordpol leben Eisbären."],
+  ["w","alltag","🪟","Glas ist eigentlich eine ganz langsam fließende Flüssigkeit.",false,"Ein Mythos. Alte Fenster sind unten dicker, weil sie früher ungleichmäßig hergestellt wurden."],
+  ["w","welt","⛪","Der Kölner Dom war nach seiner Fertigstellung 1880 das höchste Gebäude der Welt.",true,"Den Rekord hielt er vier Jahre lang."],
+  ["w","tiere","🐧","Pinguine haben Knie.",true,"Sie sind nur unter den Federn versteckt."],
+  ["w","tiere","🐝","Bienen können menschliche Gesichter wiedererkennen.",true,"In Versuchen konnten Honigbienen Fotos von Gesichtern unterscheiden."],
+  ["w","koerper","🥜","Erdnüsse sind Nüsse.",false,"Erdnüsse sind Hülsenfrüchte – wie Erbsen und Bohnen."],
+  ["w","tiere","🎋","Manche Bambusarten können über einen halben Meter an einem Tag wachsen.",true,"Bambus ist die am schnellsten wachsende Pflanze der Welt."],
+  ["w","tiere","🐊","Krokodile können ihre Zunge nicht herausstrecken.",true,"Die Zunge ist am Unterkiefer festgewachsen."],
+  ["w","tiere","🐴","Bei Seepferdchen bekommen die Männchen die Babys.",true,"Das Weibchen legt die Eier in eine Bauchtasche des Männchens."],
+  ["w","tiere","🦤","Das Auge eines Straußes ist größer als sein Gehirn.",true,"Strauße haben die größten Augen aller Landtiere."],
+  ["w","koerper","🥕","Karotten waren ursprünglich lila.",true,"Orange Karotten wurden erst vor einigen hundert Jahren in den Niederlanden gezüchtet."],
+  ["w","alltag","🦕","Der T. rex lebte zur gleichen Zeit wie der Stegosaurus.",false,"Zwischen den beiden liegen über 80 Millionen Jahre – der T. rex lebt zeitlich näher an uns als am Stegosaurus."],
+  ["w","koerper","🤧","Beim Niesen bleibt das Herz kurz stehen.",false,"Ein Mythos. Der Herzrhythmus ändert sich nur ganz kurz ein wenig."],
+);
+
+const TOPICS = { tiere: "🐾 Tiere & Natur", koerper: "🍔 Körper & Essen", welt: "🌍 Welt & Rekorde", alltag: "🤪 Alltag & Kurioses" };
+const TYPES = { s: "🔢 Schätzfrage", m: "⚖️ Was ist mehr?", w: "🤥 Wahr oder Quatsch?" };
+const COLORS = ["#ff2e88", "#19d3ff", "#ffd400", "#22d66b", "#a259ff", "#ff8a1f", "#ffffff", "#ff5c5c"];
+
+const QUESTIONS = Q.map(r => {
+  if (r[0] === "s") return { type: "s", t: r[1], e: r[2], q: r[3], a: r[4], unit: r[5], f: r[6] };
+  if (r[0] === "m") return { type: "m", t: r[1], q: r[2], A: r[3], B: r[4], ok: r[5], f: r[6] };
+  return { type: "w", t: r[1], e: r[2], q: r[3], ok: r[4], f: r[5] };
+});
+
+/* ================================================================
+   EINSTELLUNGEN (nur Namen und Auswahl werden gemerkt, keine Punkte)
+   ================================================================ */
+const KEY = "mrquiz.v1";
+let S = { show: "", mode: "spieler", spieler: [], teams: ["Kinder", "Eltern"], topics: Object.keys(TOPICS), types: Object.keys(TYPES), sound: true };
+try { Object.assign(S, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+const showName = () => (S.show || "Quiz").toUpperCase();
+
+/* ================================================================
+   FOTOS – bleiben nur auf diesem Gerät (IndexedDB)
+   ================================================================ */
+let photos = []; // {id, url}
+let dbp = null;
+function db() {
+  if (dbp) return dbp;
+  dbp = new Promise((res, rej) => {
+    try {
+      const r = indexedDB.open("mrquiz-fotos", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("fotos", { keyPath: "id" });
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    } catch (e) { rej(e); }
+  });
+  return dbp;
+}
+async function loadPhotos() {
+  try {
+    const d = await db();
+    const all = await new Promise((res, rej) => { const r = d.transaction("fotos").objectStore("fotos").getAll(); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    photos = all.map(p => ({ id: p.id, url: URL.createObjectURL(p.blob) }));
+  } catch (e) { photos = []; }
+}
+async function storePhoto(blob) {
+  const id = "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  photos.push({ id, url: URL.createObjectURL(blob) });
+  try { const d = await db(); d.transaction("fotos", "readwrite").objectStore("fotos").put({ id, blob }); } catch (e) {}
+}
+async function deletePhoto(id) {
+  const p = photos.find(x => x.id === id);
+  if (p) URL.revokeObjectURL(p.url);
+  photos = photos.filter(x => x.id !== id);
+  try { const d = await db(); d.transaction("fotos", "readwrite").objectStore("fotos").delete(id); } catch (e) {}
+}
+function shrink(file) {
+  return new Promise(res => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const max = 1400, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => res(b || file), "image/jpeg", .86);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res(null); };
+    img.src = url;
+  });
+}
+let placeholder = null;
+function placeholderUrl() {
+  if (placeholder) return placeholder;
+  const c = document.createElement("canvas"); c.width = 800; c.height = 1000;
+  const g = c.getContext("2d");
+  const gr = g.createLinearGradient(0, 0, 800, 1000);
+  gr.addColorStop(0, "#ff2e88"); gr.addColorStop(.5, "#a259ff"); gr.addColorStop(1, "#19d3ff");
+  g.fillStyle = gr; g.fillRect(0, 0, 800, 1000);
+  g.fillStyle = "#ffffff22";
+  for (let i = 0; i < 40; i++) { g.beginPath(); g.arc(Math.random() * 800, Math.random() * 1000, 10 + Math.random() * 60, 0, 7); g.fill(); }
+  g.textAlign = "center"; g.fillStyle = "#ffd400"; g.strokeStyle = "#16163a"; g.lineWidth = 18;
+  g.font = "bold 420px Arial Black, Impact, sans-serif";
+  g.strokeText("?", 400, 680); g.fillText("?", 400, 680);
+  placeholder = c.toDataURL("image/jpeg", .85);
+  return placeholder;
+}
+
+/* ================================================================
+   HELFER
+   ================================================================ */
+const app = document.getElementById("app");
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = n => Number(n).toLocaleString("de-DE");
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+let actx;
+function ac() {
+  if (!S.sound) return null;
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); return actx; } catch (e) { return null; }
+}
+function tone(f, d, type = "sine", vol = .2, when = 0) {
+  const a = ac(); if (!a) return;
+  const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + .05);
+}
+function noise(d, vol = .4, when = 0, freq = 800) {
+  const a = ac(); if (!a) return;
+  const len = Math.floor(a.sampleRate * d), buf = a.createBuffer(1, len, a.sampleRate), ch = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  f.type = "lowpass"; f.frequency.value = freq; g.gain.value = vol;
+  s.buffer = buf; s.connect(f).connect(g).connect(a.destination); s.start(a.currentTime + when);
+}
+const sfx = {
+  tap: () => tone(700, .06, "triangle", .12),
+  boom: () => { noise(.9, .9, 0, 600); tone(70, .5, "sine", .5); },
+  drum: (dur = 1.6) => { for (let t = 0; t < dur; t += .06) noise(.05, .25 + t / dur * .4, t, 1800); },
+  tusch: () => { [523, 659, 784, 1047].forEach(f => { tone(f, .9, "sawtooth", .07, 0); tone(f, .9, "square", .03, 0); }); },
+  tick: () => tone(1000, .08, "square", .12),
+  go: () => tone(1500, .25, "square", .12),
+  good: () => { tone(784, .15, "sine", .2); tone(1175, .3, "sine", .2, .12); },
+  win: () => { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .35, "triangle", .18, i * .12)); },
+};
+function buzz(p) { try { if (S.sound && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
+
+const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+let deVoice = null;
+function pickVoice() { if (!canSpeak) return; const v = speechSynthesis.getVoices(); deVoice = v.find(x => /^de[-_]DE/i.test(x.lang)) || v.find(x => /^de/i.test(x.lang)) || null; }
+if (canSpeak) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(t) {
+  if (!canSpeak) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t.replace(/[\p{Extended_Pictographic}‍️]/gu, "")); u.lang = "de-DE"; if (deVoice) u.voice = deVoice; speechSynthesis.speak(u); } catch (e) {}
+}
+function stopSpeak() { if (canSpeak) try { speechSynthesis.cancel(); } catch (e) {} }
+
+function toast(m) { document.querySelectorAll(".toast").forEach(t => t.remove()); const t = document.createElement("div"); t.className = "toast"; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2400); }
+function confirmBox(title, text, yes, no, onYes) {
+  const bg = document.createElement("div"); bg.className = "modal-bg";
+  bg.innerHTML = `<div class="modal"><h3>${title}</h3>${text ? `<p>${text}</p>` : ""}<div class="row"><button class="btn light" data-no>${no}</button><button class="btn pink" data-yes>${yes}</button></div></div>`;
+  bg.onclick = e => { if (e.target === bg || e.target.closest("[data-no]")) bg.remove(); else if (e.target.closest("[data-yes]")) { bg.remove(); onYes(); } };
+  document.body.appendChild(bg);
+}
+
+// Konfetti
+const cv = document.getElementById("confetti"), cx = cv.getContext("2d");
+let parts = [], confRun = false;
+function confetti(n = 160) {
+  cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio;
+  for (let i = 0; i < n; i++) parts.push({ x: Math.random() * cv.width, y: -20 - Math.random() * cv.height * .5, vx: (Math.random() - .5) * 4, vy: 3 + Math.random() * 5,
+    r: 4 + Math.random() * 6, c: COLORS[i % COLORS.length], a: Math.random() * 6, va: (Math.random() - .5) * .3 });
+  if (!confRun) { confRun = true; requestAnimationFrame(confStep); }
+}
+function confStep() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  const d = devicePixelRatio;
+  parts.forEach(p => { p.x += p.vx * d; p.y += p.vy * d; p.a += p.va; cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c; cx.fillRect(-p.r * d, -p.r * d / 2, p.r * 2 * d, p.r * d); cx.restore(); });
+  parts = parts.filter(p => p.y < cv.height + 30);
+  if (parts.length) requestAnimationFrame(confStep); else { confRun = false; cx.clearRect(0, 0, cv.width, cv.height); }
+}
+
+function render(html, after) { stopSpeak(); app.innerHTML = html; window.scrollTo(0, 0); after && after(); }
+app.addEventListener("click", e => {
+  const b = e.target.closest("[data-go]"); if (!b || b.disabled) return;
+  const [fn, ...args] = b.dataset.go.split("|");
+  if (A[fn]) { sfx.tap(); A[fn](...args); }
+});
+const logo = small => `<div class="logo ${small ? "small" : ""}"><div class="mr">MR.</div><div class="nm">${esc(showName())}</div>${small ? "" : `<div class="sub">Die Familien-Spielshow</div>`}</div>`;
+
+/* ================================================================
+   SPIEL
+   ================================================================ */
+let G = null; // { players:[{name,color,score}], deck:[], q, phase, guesses:[], right:Set, photo }
+
+function setup() {
+  const list = S.mode === "spieler" ? S.spieler : S.teams;
+  const who = S.mode === "spieler" ? "Spieler" : "Team";
+  const ph = photos.map(p => `<div class="ph"><img src="${p.url}" alt=""><button data-go="delPhoto|${p.id}" aria-label="Foto entfernen">✕</button></div>`).join("");
+  render(`
+    ${logo()}
+    <div class="panel">
+      <h2>📷 Eure Fotos</h2>
+      <p class="hint">Bei jedem Knopfdruck zerplatzt eins davon. Die Fotos bleiben nur auf diesem Handy.</p>
+      <div class="photos">${ph}<label class="ph add" aria-label="Fotos hinzufügen">＋<input type="file" id="pick" accept="image/*" multiple hidden></label></div>
+    </div>
+    <div class="panel">
+      <h2>🎤 Name der Show</h2>
+      <div class="namefield"><span>MR.</span><input id="show" maxlength="14" placeholder="z. B. euer Familienname" value="${esc(S.show)}" autocomplete="off"></div>
+    </div>
+    <div class="panel">
+      <h2>👨‍👩‍👧 Wer spielt?</h2>
+      <div class="seg"><button class="${S.mode === "spieler" ? "on" : ""}" data-go="mode|spieler">Jeder gegen jeden</button><button class="${S.mode === "teams" ? "on" : ""}" data-go="mode|teams">Teams</button></div>
+      <div class="plist">${list.map((n, i) => `<div class="pitem"><i class="dotc" style="background:${COLORS[i % COLORS.length]}"></i><span class="nm">${esc(n)}</span><button data-go="delName|${i}" aria-label="${esc(n)} entfernen">✕</button></div>`).join("")}</div>
+      ${list.length < 8 ? `<div class="addrow"><input id="newname" maxlength="16" placeholder="${who} hinzufügen …" autocomplete="off"><button data-go="addName" aria-label="Hinzufügen">＋</button></div>` : ""}
+    </div>
+    <div class="panel">
+      <h2>🎯 Fragen</h2>
+      <div class="chips">${Object.entries(TYPES).map(([k, n]) => `<button class="chip ${S.types.includes(k) ? "on" : ""}" data-go="toggle|types|${k}">${n}</button>`).join("")}</div>
+      <div class="chips mt">${Object.entries(TOPICS).map(([k, n]) => `<button class="chip ${S.topics.includes(k) ? "on" : ""}" data-go="toggle|topics|${k}">${n}</button>`).join("")}</div>
+    </div>
+    <div class="mt"><button class="btn pink" data-go="start" style="min-height:70px;font-size:26px">🎬 Show starten</button></div>
+    <div class="mt"><button class="btn ghost" data-go="sound">${S.sound ? "🔔 Ton an" : "🔕 Ton aus"}</button></div>`);
+  $("#show").addEventListener("input", e => { S.show = e.target.value.trim(); save(); });
+  const nn = $("#newname"); if (nn) nn.addEventListener("keydown", e => { if (e.key === "Enter") A.addName(); });
+  $("#pick").addEventListener("change", async e => {
+    const files = [...e.target.files].slice(0, 20 - photos.length);
+    if (!files.length) return;
+    toast("Fotos werden geladen …");
+    for (const f of files) { const b = await shrink(f); if (b) await storePhoto(b); }
+    setup();
+  });
+}
+
+function buildDeck() {
+  return shuffle(QUESTIONS.filter(q => S.types.includes(q.type) && S.topics.includes(q.t)));
+}
+function nextPhoto() {
+  if (!photos.length) return placeholderUrl();
+  if (photos.length === 1) return photos[0].url;
+  let p; do { p = photos[Math.floor(Math.random() * photos.length)].url; } while (p === G.photo);
+  return p;
+}
+
+function scoreBar() {
+  const max = Math.max(...G.players.map(p => p.score));
+  return `<div class="score">${G.players.map(p => `<div class="sc ${p.score === max && max > 0 ? "lead" : ""}"><i style="background:${p.color}"></i>${esc(p.name)} <b>${p.score}</b></div>`).join("")}</div>`;
+}
+
+const COLS = 6, ROWS = 7;
+function tilesHTML(url) {
+  let h = "";
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    h += `<div class="tile" style="left:${c * 100 / COLS}%;top:${r * 100 / ROWS}%;width:${100 / COLS + .3}%;height:${100 / ROWS + .3}%;` +
+      `background-image:url('${url}');background-size:${COLS * 100}% ${ROWS * 100}%;background-position:${c / (COLS - 1) * 100}% ${r / (ROWS - 1) * 100}%" data-c="${c}" data-r="${r}"></div>`;
+  }
+  return h;
+}
+function scatter(el, strong) {
+  const c = +el.dataset.c, r = +el.dataset.r;
+  const dx = (c - (COLS - 1) / 2) / COLS, dy = (r - (ROWS - 1) / 2) / ROWS;
+  const k = strong ? 900 : 500;
+  const x = dx * k + (Math.random() - .5) * k * .6, y = dy * k + (Math.random() - .5) * k * .6 - (strong ? 120 : 0);
+  return `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) rotate(${((Math.random() - .5) * 720).toFixed(0)}deg) scale(${(.3 + Math.random() * .9).toFixed(2)})`;
+}
+function bulbs() {
+  let h = ""; const n = 22;
+  for (let i = 0; i < n; i++) {
+    const t = i / n; let x, y;
+    if (t < .25) { x = t * 4 * 100; y = 0; } else if (t < .5) { x = 100; y = (t - .25) * 4 * 100; } else if (t < .75) { x = 100 - (t - .5) * 4 * 100; y = 100; } else { x = 0; y = 100 - (t - .75) * 4 * 100; }
+    h += `<i style="left:calc(${x}% - 5px);top:calc(${y}% - 5px);animation-delay:${(i % 2) * .5}s"></i>`;
+  }
+  return `<div class="bulbs">${h}</div>`;
+}
+
+function stage() {
+  G.photo = nextPhoto();
+  render(`
+    <div class="stagehead">${logo(true)}<button class="iconbtn" data-go="end" aria-label="Spiel beenden">🏁</button></div>
+    ${scoreBar()}
+    <div class="frame-wrap">${bulbs()}<div class="frame" id="frame"><div class="tiles" id="tiles">${tilesHTML(G.photo)}</div><div class="flash" id="flash"></div></div></div>
+    <button class="bigred" id="press" data-go="press"><small>💥</small>Drück<br>mich!</button>`,
+    () => {
+      // Puzzleteile fliegen zusammen
+      const tiles = [...document.querySelectorAll(".tile")];
+      tiles.forEach(t => { t.style.transition = "none"; t.style.transform = scatter(t, false); t.style.opacity = "0"; });
+      requestAnimationFrame(() => requestAnimationFrame(() => tiles.forEach(t => {
+        t.style.transition = `transform .8s cubic-bezier(.2,.9,.3,1) ${(Math.random() * .25).toFixed(2)}s, opacity .4s ease-out`;
+        t.style.transform = "none"; t.style.opacity = "1";
+      })));
+    });
+}
+
+async function explode() {
+  const btn = $("#press"); if (btn) btn.disabled = true;
+  const fr = $("#frame"); fr.classList.add("shake"); buzz(80);
+  await sleep(380);
+  sfx.boom(); buzz([60, 30, 120]);
+  $("#flash").classList.add("go");
+  document.querySelectorAll(".tile").forEach(t => {
+    t.style.transition = `transform .95s cubic-bezier(.15,.7,.3,1) ${(Math.random() * .12).toFixed(2)}s, opacity .95s ease-in`;
+    t.style.transform = scatter(t, true); t.style.opacity = "0";
+  });
+  await sleep(750);
+}
+
+function nextQuestion() {
+  if (!G.deck.length) G.deck = buildDeck();
+  G.q = G.deck.pop();
+  G.guesses = []; G.right = new Set(); G.input = ""; G.turn = 0;
+  question();
+}
+
+function qHeader(q) {
+  return `<div style="text-align:center"><span class="qtype ${q.type}">${TYPES[q.type]}</span></div>`;
+}
+function readText(q) {
+  if (q.type === "m") return `${q.q} ${q.A[1]} oder ${q.B[1]}?`;
+  if (q.type === "w") return `Wahr oder Quatsch? ${q.q}`;
+  return `${q.q} Antwort in ${q.unit}.`;
+}
+function question() {
+  const q = G.q;
+  let body = "";
+  if (q.type === "s") {
+    body = `<div class="qcard">${canSpeak ? `<button class="speak" data-go="read" aria-label="Vorlesen">🔊</button>` : ""}<div class="emo">${q.e}</div><div class="q">${esc(q.q)}</div><div class="unit">Antwort in: <b>${esc(q.unit)}</b></div></div>
+      <div class="mt"><button class="btn green" data-go="handoff">📱 Alle schätzen!</button></div>
+      <p style="text-align:center;color:#dfe1ff;font-size:16px;margin-top:10px">Das Handy geht reihum – jeder tippt geheim seine Zahl ein.</p>`;
+  } else if (q.type === "m") {
+    body = `<div class="qcard" style="padding:14px">${canSpeak ? `<button class="speak" data-go="read" aria-label="Vorlesen">🔊</button>` : ""}<div class="q" style="margin:4px 40px">${esc(q.q)}</div></div>
+      <div class="vs" id="vs">${[q.A, q.B].map((o, i) => `<div class="opt" id="o${i}"><div class="e">${o[0]}</div><div class="t">${esc(o[1])}</div><div class="v"></div></div>${i === 0 ? `<div class="mid">VS</div>` : ""}`).join("")}</div>
+      <div id="act" class="mt"><button class="btn" data-go="countdown">👉 3 · 2 · 1 – Zeigen!</button>
+      <p style="text-align:center;color:#dfe1ff;font-size:16px;margin-top:10px">Alle zeigen gleichzeitig nach links oder rechts.</p></div>`;
+  } else {
+    body = `<div class="qcard">${canSpeak ? `<button class="speak" data-go="read" aria-label="Vorlesen">🔊</button>` : ""}<div class="emo">${q.e}</div><div class="q">${esc(q.q)}</div></div>
+      <div class="tf"><div class="t" id="o0">👍 Wahr<small>Daumen hoch</small></div><div class="f" id="o1">👎 Quatsch<small>Daumen runter</small></div></div>
+      <div id="act" class="mt"><button class="btn" data-go="countdown">👍 3 · 2 · 1 – Daumen!</button></div>`;
+  }
+  render(`<div class="stagehead">${logo(true)}<button class="iconbtn" data-go="end" aria-label="Spiel beenden">🏁</button></div>${scoreBar()}${qHeader(q)}${body}`);
+}
+
+/* ---------- Schätzen: reihum eintippen ---------- */
+function handoff() {
+  const p = G.players[G.turn];
+  render(`<div class="hand">
+    <div class="ph-ico">📱</div>
+    <h2><span class="tag" style="background:${p.color}"></span>${esc(p.name)}</h2>
+    <p>${G.turn === 0 ? "fängt an!" : "ist dran! Gib das Handy weiter."}<br>Die anderen schauen weg 🙈</p>
+    <button class="btn green" data-go="entry">Ich bin's – los!</button>
+    <div class="progress">${G.players.map((x, i) => `<span class="${i < G.turn ? "done" : ""}">${i < G.turn ? "✓ " : ""}${esc(x.name)}</span>`).join("")}</div>
+  </div>`);
+}
+function entry() {
+  const p = G.players[G.turn], q = G.q;
+  G.input = "";
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "000", "0", "⌫"];
+  render(`<div class="entry">
+    <div class="who-now"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${p.color};border:2px solid var(--ink);vertical-align:middle"></span> ${esc(p.name)} schätzt …</div>
+    <div class="qsmall">${q.e} ${esc(q.q)}</div>
+    <div class="display" id="disp"></div>
+    <div class="keys">${keys.map(k => `<button class="${k === "⌫" ? "del" : k === "000" ? "zz" : ""}" data-go="key|${k}">${k}</button>`).join("")}</div>
+    <div class="mt"><button class="btn pink" id="lock" data-go="lockGuess" disabled>🔒 Tipp abgeben</button></div>
+  </div>`, updDisp);
+}
+function updDisp() {
+  const v = G.input;
+  $("#disp").innerHTML = (v ? fmt(+v) : `<span style="opacity:.35">0</span>`) + `<small>${esc(G.q.unit)}</small>`;
+  $("#lock").disabled = !v;
+}
+async function reveal() {
+  const q = G.q;
+  render(`<div class="stagehead">${logo(true)}</div>${scoreBar()}${qHeader(q)}
+    <div class="qcard"><div class="emo" style="font-size:48px">${q.e}</div><div class="q" style="font-size:20px">${esc(q.q)}</div></div>
+    <div class="answer" id="ans"><div class="lbl">Die richtige Antwort ist …</div><div class="num" id="num">🥁</div></div>
+    <div id="rest"></div>`);
+  sfx.drum(1.6); buzz([30, 40, 30, 40, 30, 40, 30]);
+  await sleep(1650);
+  // Zahl hochzählen
+  const el = $("#num"), target = q.a, t0 = performance.now(), dur = 900;
+  await new Promise(res => {
+    const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      el.innerHTML = fmt(Math.round(target * e)) + ` <span class="u">${esc(q.unit)}</span>`;
+      if (k < 1) requestAnimationFrame(step); else res(); };
+    requestAnimationFrame(step);
+  });
+  sfx.tusch(); confetti(120);
+  const ranked = G.guesses.map((g, i) => ({ i, g, d: Math.abs(g - target) })).sort((a, b) => a.d - b.d);
+  const best = ranked[0].d;
+  const medals = ["🥇", "🥈", "🥉"];
+  let place = 0, prev = -1;
+  ranked.forEach((r, k) => { if (r.d !== prev) { place = k; prev = r.d; } r.place = place; });
+  ranked.forEach(r => { if (r.d === best) { r.pts = r.d === 0 ? 2 : 1; G.players[r.i].score += r.pts; } });
+  const sb = document.querySelector(".score"); if (sb) sb.outerHTML = scoreBar();
+  $("#rest").innerHTML = `
+    <div class="ranking">${ranked.map((r, k) => { const p = G.players[r.i];
+      return `<div class="rk ${r.pts ? "win" : ""}" style="animation-delay:${k * .12}s"><span class="pos">${medals[r.place] || (r.place + 1) + "."}</span>
+        <span class="nm">${esc(p.name)}${r.pts ? `<span class="pts">+${r.pts}</span>` : ""}</span>
+        <span class="g">${fmt(r.g)}<span class="d">${r.d === 0 ? "VOLLTREFFER! 🎯" : (r.g > target ? "+" : "−") + fmt(r.d) + " daneben"}</span></span></div>`; }).join("")}</div>
+    ${best === 0 ? `<p style="text-align:center;font-size:18px;margin:10px 0 0">🎯 Volltreffer gibt 2 Punkte!</p>` : ""}
+    <div class="fact"><b>🤯 Wow-Fakt:</b><br>${esc(q.f)}</div>
+    <div class="mt"><button class="btn pink" data-go="stage">💥 Nächste Frage</button></div>`;
+}
+
+/* ---------- Was ist mehr? / Wahr oder Quatsch ---------- */
+async function countdown() {
+  const act = $("#act");
+  for (const n of ["3", "2", "1"]) { act.innerHTML = `<div class="countdown">${n}</div>`; sfx.tick(); buzz(40); await sleep(750); }
+  act.innerHTML = `<div class="countdown go">${G.q.type === "w" ? "DAUMEN!" : "ZEIGEN!"}</div>`; sfx.go(); buzz(150);
+  await sleep(900);
+  act.innerHTML = `<button class="btn green" data-go="resolve">🥁 Auflösen</button>`;
+}
+async function resolve() {
+  const q = G.q, act = $("#act");
+  act.innerHTML = `<div class="countdown go" style="font-size:44px">🥁 …</div>`;
+  sfx.drum(1.1); await sleep(1150);
+  const win = q.type === "m" ? q.ok : (q.ok ? 0 : 1);
+  [0, 1].forEach(i => $("#o" + i).classList.add(i === win ? "win" : "lose"));
+  if (q.type === "m") { $("#o0 .v").textContent = q.A[2]; $("#o1 .v").textContent = q.B[2]; }
+  sfx.tusch(); confetti(80);
+  const verdict = q.type === "w" ? (q.ok ? "✅ Das ist WAHR!" : "❌ Das ist QUATSCH!") : `✅ ${q.ok === 0 ? q.A[1] : q.B[1]}!`;
+  act.innerHTML = `
+    <div class="fact"><b>${esc(verdict)}</b><br>${esc(q.f)}</div>
+    <div class="sectitle">Wer lag richtig?</div>
+    <div class="who">${G.players.map((p, i) => `<button data-go="toggleRight|${i}" id="w${i}"><i style="background:${p.color}"></i><span>${esc(p.name)}</span></button>`).join("")}</div>
+    <div class="mt"><button class="btn pink" data-go="award">✅ Punkte geben & weiter</button></div>`;
+}
+
+function end() {
+  const ranked = G.players.slice().sort((a, b) => b.score - a.score);
+  let place = 0, prev = null;
+  ranked.forEach((p, k) => { if (p.score !== prev) { place = k + 1; prev = p.score; } p.place = place; });
+  const top = ranked.slice(0, 3), order = top.length === 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[1], top[0]] : top;
+  const medal = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  const winners = ranked.filter(p => p.place === 1).map(p => p.name);
+  render(`${logo(true)}
+    <div class="answer"><div class="lbl">Und der Sieg geht an …</div><div class="num" style="font-size:clamp(36px,11vw,56px)">${esc(winners.join(" & "))}</div></div>
+    <div class="podium">${order.map(p => `<div class="pod p${Math.min(p.place, 3)}"><div class="medal">${medal[Math.min(p.place, 3)]}</div><div class="nm">${esc(p.name)}</div><div class="blk">${p.score}</div></div>`).join("")}</div>
+    ${ranked.length > 3 ? `<div class="rest">${ranked.slice(3).map(p => `<div class="rk"><span class="pos">${p.place}.</span><span class="nm">${esc(p.name)}</span><span class="g">${p.score}</span></div>`).join("")}</div>` : ""}
+    <div class="mt"><button class="btn pink" data-go="again">🔁 Neues Spiel</button></div>
+    <div class="mt"><button class="btn ghost" data-go="setup">⚙️ Zum Start</button></div>`);
+  sfx.win(); confetti(260); setTimeout(() => confetti(160), 900);
+  if (S.sound) speak(`Und der Sieg geht an ${winners.join(" und ")}!`);
+}
+
+/* ================================================================
+   AKTIONEN
+   ================================================================ */
+const A = {
+  setup, stage, handoff, entry, countdown, resolve,
+  mode(m) { S.mode = m; save(); setup(); },
+  addName() {
+    const inp = $("#newname"); const n = (inp && inp.value || "").trim();
+    if (!n) { toast("Bitte einen Namen eintippen ✏️"); inp && inp.focus(); return; }
+    (S.mode === "spieler" ? S.spieler : S.teams).push(n); save(); setup();
+    const ni = $("#newname"); if (ni) ni.focus();
+  },
+  delName(i) { (S.mode === "spieler" ? S.spieler : S.teams).splice(+i, 1); save(); setup(); },
+  async delPhoto(id) { await deletePhoto(id); setup(); },
+  toggle(key, k) {
+    const arr = S[key];
+    if (arr.includes(k)) { if (arr.length === 1) return toast("Mindestens eins muss an bleiben"); S[key] = arr.filter(x => x !== k); }
+    else arr.push(k);
+    save(); setup();
+  },
+  sound() { S.sound = !S.sound; save(); setup(); },
+  start() {
+    const list = S.mode === "spieler" ? S.spieler : S.teams;
+    if (list.length < 2) return toast(S.mode === "spieler" ? "Mindestens 2 Spieler eintragen 🙂" : "Mindestens 2 Teams eintragen 🙂");
+    const deck = buildDeck();
+    if (!deck.length) return toast("Für diese Auswahl gibt es keine Fragen");
+    G = { players: list.map((n, i) => ({ name: n, color: COLORS[i % COLORS.length], score: 0 })), deck, photo: null };
+    sfx.tusch(); stage();
+  },
+  again() { G.players.forEach(p => p.score = 0); G.deck = buildDeck(); stage(); },
+  async press() { await explode(); nextQuestion(); },
+  read() { speak(readText(G.q)); },
+  key(k) {
+    if (k === "⌫") G.input = G.input.slice(0, -1);
+    else if (G.input.length < 12) { G.input = (G.input + k).replace(/^0+/, ""); }
+    updDisp();
+  },
+  lockGuess() {
+    G.guesses[G.turn] = +G.input; G.turn++;
+    sfx.good(); buzz(30);
+    if (G.turn < G.players.length) handoff(); else reveal();
+  },
+  toggleRight(i) {
+    i = +i; G.right.has(i) ? G.right.delete(i) : G.right.add(i);
+    $("#w" + i).classList.toggle("on", G.right.has(i));
+  },
+  award() {
+    G.right.forEach(i => G.players[i].score++);
+    if (G.right.size) { sfx.good(); confetti(60); }
+    stage();
+  },
+  end() { confirmBox("Show beenden?", "Dann kommt die Siegerehrung.", "Siegerehrung 🏆", "Weiterspielen", end); },
+};
+
+loadPhotos().then(setup);
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "Mr. Quiz – Die Familien-Spielshow",
+  "short_name": "Mr. Quiz",
+  "description": "Schätzfragen, Was ist mehr? und Wahr oder Quatsch – mit eurem Familienfoto.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14185e",
+  "theme_color": "#14185e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

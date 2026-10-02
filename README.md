@@ -36,3 +36,10 @@ In `index.html` steht oben die Liste `Q`. Eine Frage sieht so aus:
 Thema (`welt`, `disney`, `hp`, `influ`), Stufe (`l` leicht mit 3 Antworten, `s` schwer mit 4 Antworten), Emoji, Frage,
 Antworten (die **erste ist immer die richtige**, die App mischt sie), Zusatzwissen.
 Nach einer Änderung in `sw.js` die Versionsnummer bei `CACHE` erhöhen, damit die Handys das Update laden.
+
+---
+
+## 💥 Mr. Quiz – Die Familien-Spielshow
+
+Fragen-Generator für den Familienabend: **https://t27t4hmhdz-crypto.github.io/zauberquiz/mrberst/**
+Details: [`mrberst/README.md`](mrberst/README.md)
